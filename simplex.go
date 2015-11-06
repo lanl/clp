@@ -7,6 +7,7 @@ package clp
 // #include "clp-interface.h"
 import "C"
 import (
+	"fmt"
 	"runtime"
 	"unsafe"
 )
@@ -33,4 +34,27 @@ func NewSimplex() *Simplex {
 		}
 	})
 	return s
+}
+
+// Bounds represents the lower and upper bound on a value.
+type Bounds struct {
+	Lower float64
+	Upper float64
+}
+
+// LoadProblem loads a problem into a simplex model.  It takes as an argument a
+// matrix (with inequalities in rows and coefficients in columns), the upper
+// and lower column bounds, the coefficients of the column objective function,
+// the upper and lower row bounds, and the coefficients of the row objective
+// function.  Any of these arguments except for the matrix can be nil.  When
+// nil, the column bounds default to {0, ∞} for each row; the column and row
+// objective functions default to 0 for all coefficients; and the row bounds
+// default to {−∞, +∞} for each column.
+func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds, rowObj []float64) {
+	// Because of the the way the C++ API works, m can't be an arbitrary
+	// implementation of the Matrix interface.  We therefore check that it
+	// wraps one of the interfaces CLP knows about and abort if not.
+	if _, ok := m.(*PackedMatrix); !ok {
+		panic(fmt.Sprintf("clp: Simplex.LoadProblem cannot currently accept a Matrix of type %T", m))
+	}
 }

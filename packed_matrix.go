@@ -14,9 +14,7 @@ import (
 	"unsafe"
 )
 
-// A PackedMatrix is a sparse representation of linear-programming matrix, with
-// each column representing a variable, each row representing an expression,
-// and each cell containing a coefficient.
+// A PackedMatrix is a basic implementation of the Matrix interface.
 type PackedMatrix struct {
 	matrix *C.clp_object    // Pointer to a CoinPackedMatrix
 	allocs []unsafe.Pointer // Row/column data to which the CoinPackedMatrix points
@@ -37,12 +35,6 @@ func NewPackedMatrix() *PackedMatrix {
 		}
 	})
 	return m
-}
-
-// A Nonzero represents an element in a sparse row or column.
-type Nonzero struct {
-	Index int     // Zero-based element offset
-	Value float64 // Value at that offset
 }
 
 // AppendColumn appends a sparse column to a packed matrix.  The column is
@@ -78,6 +70,15 @@ func (pm *PackedMatrix) AppendColumn(col []Nonzero) {
 
 	// Tell our C wrapper function to append the column.
 	C.pm_append_col(pm.matrix, C.int(nElts), (*C.int)(rows), (*C.double)(vals))
+}
+
+// Dims returns a packed matrix's dimensions (rows and columns).
+func (pm *PackedMatrix) Dims() (rows, cols int) {
+	var r, c C.int
+	C.pm_get_dims(pm.matrix, &r, &c)
+	rows = int(r)
+	cols = int(c)
+	return
 }
 
 // DumpMatrix outputs a packed matrix in a human-readable format.  This method

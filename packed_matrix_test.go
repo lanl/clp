@@ -15,11 +15,11 @@ func TestCreateMatrix(t *testing.T) {
 }
 
 // Append a given number of columns to a (presumably empty) matrix to produce
-// an NxN sparse matrix with nonzeroes only on the major and minor diagonals.
-func addColumns(m *clp.PackedMatrix, n int) {
-	for i := 0; i < n; i++ {
-		major := clp.Nonzero{Index: i, Value: float64(i) * 10.0}
-		minor := clp.Nonzero{Index: n - i - 1, Value: -float64(i) * 10.0}
+// an NRxNC sparse matrix with nonzeroes only on the major and minor diagonals.
+func addColumns(m *clp.PackedMatrix, nr, nc int) {
+	for i := 0; i < nc; i++ {
+		major := clp.Nonzero{Index: i % nr, Value: float64(i) * 10.0}
+		minor := clp.Nonzero{Index: nr - i%nr - 1, Value: -float64(i) * 10.0}
 		col := []clp.Nonzero{major, minor}
 		m.AppendColumn(col)
 	}
@@ -28,14 +28,30 @@ func addColumns(m *clp.PackedMatrix, n int) {
 // Test if we can add columns to a packed matrix.
 func TestAddColumns(t *testing.T) {
 	m := clp.NewPackedMatrix()
-	addColumns(m, 1000)
+	addColumns(m, 1000, 1000)
+}
+
+// Test if we can query a packed matrix's dimensions.
+func TestDims(t *testing.T) {
+	for _, trials := range [...][2]int{
+		{66, 7},  // Wide
+		{55, 68}, // Tall
+	} {
+		nr, nc := trials[0], trials[1]
+		m := clp.NewPackedMatrix()
+		addColumns(m, nr, nc)
+		r, c := m.Dims()
+		if r != nr || c != nc {
+			t.Fatalf("Expected %dx%d but saw %dx%d", nr, nc, r, c)
+		}
+	}
 }
 
 // Test if we can add columns to a packed matrix and get the expected dump in
 // return.
 func TestDumpMatrix(t *testing.T) {
 	m := clp.NewPackedMatrix()
-	addColumns(m, 5)
+	addColumns(m, 5, 5)
 	expected := `Dumping matrix...
 
 colordered: 1

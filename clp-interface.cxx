@@ -23,6 +23,13 @@ extern "C" {
     ((CoinPackedMatrix*)matrix)->appendCol(vecsize, vecind, vecelem);
   }
 
+  // Retrieve a CoinPackedMatrix's rows and columns.
+  void pm_get_dims (clp_object* matrix, int* nrows, int* ncols)
+  {
+    *nrows = ((CoinPackedMatrix*)matrix)->getNumRows();
+    *ncols = ((CoinPackedMatrix*)matrix)->getNumCols();
+  }
+
   // Dump a CoinPackedMatrix to a file in a human-readable format.
   void pm_dump_matrix (clp_object* matrix, const char* fname)
   {
