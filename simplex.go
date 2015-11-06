@@ -2,8 +2,6 @@
 
 package clp
 
-// #cgo pkg-config: clp
-// #include <stdlib.h>
 // #include "clp-interface.h"
 import "C"
 import (
@@ -30,7 +28,7 @@ func NewSimplex() *Simplex {
 		// memory it referred to.
 		C.free_simplex_model(s.model)
 		for _, p := range s.allocs {
-			C.free(p)
+			c_free(p)
 		}
 	})
 	return s

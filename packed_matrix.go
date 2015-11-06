@@ -2,8 +2,6 @@
 
 package clp
 
-// #cgo pkg-config: clp
-// #include <stdlib.h>
 // #include "clp-interface.h"
 import "C"
 import (
@@ -31,7 +29,7 @@ func NewPackedMatrix() *PackedMatrix {
 		// memory it referred to.
 		C.free_packed_matrix(m.matrix)
 		for _, p := range m.allocs {
-			C.free(p)
+			c_free(p)
 		}
 	})
 	return m
@@ -44,28 +42,16 @@ func (pm *PackedMatrix) AppendColumn(col []Nonzero) {
 	// malloc to allocate the memory, which we free in the PackedMatrix
 	// finalizer.
 	nElts := len(col)
-	var cInt C.int
-	intB := unsafe.Sizeof(cInt)
-	rows := C.malloc(C.size_t(intB * uintptr(nElts)))
-	if rows == nil {
-		panic("clp: malloc failed")
-	}
+	rows := c_malloc(nElts, C.int(0))
 	pm.allocs = append(pm.allocs, rows)
-	var cDbl C.double
-	dblB := unsafe.Sizeof(cDbl)
-	vals := C.malloc(C.size_t(dblB * uintptr(nElts)))
-	if vals == nil {
-		panic("clp: malloc failed")
-	}
+	vals := c_malloc(nElts, C.double(0.0))
 	pm.allocs = append(pm.allocs, vals)
 
 	// Convert from the given array of two-element structs to two flat
 	// vectors, and replace Go datatypes with C datatypes.
 	for i, c := range col {
-		ptr := unsafe.Pointer(uintptr(rows) + uintptr(i)*intB)
-		*(*C.int)(ptr) = C.int(c.Index)
-		ptr = unsafe.Pointer(uintptr(vals) + uintptr(i)*dblB)
-		*(*C.double)(ptr) = C.double(c.Value)
+		c_SetArrayInt(rows, i, c.Index)
+		c_SetArrayDouble(vals, i, c.Value)
 	}
 
 	// Tell our C wrapper function to append the column.
@@ -97,7 +83,7 @@ func (pm *PackedMatrix) DumpMatrix(w io.Writer) error {
 	outName := out.Name()
 	defer os.Remove(outName)
 	fn := C.CString(outName)
-	defer C.free(unsafe.Pointer(fn))
+	defer c_free(unsafe.Pointer(fn))
 	C.pm_dump_matrix(pm.matrix, fn)
 	in, err := os.Open(outName)
 	if err != nil {

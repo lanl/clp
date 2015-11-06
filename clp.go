@@ -32,6 +32,14 @@ Relevant URLs:
 */
 package clp
 
+// #cgo pkg-config: clp
+// #include <stdlib.h>
+import "C"
+import (
+	"reflect"
+	"unsafe"
+)
+
 // A Nonzero represents an element in a sparse row or column.
 type Nonzero struct {
 	Index int     // Zero-based element offset
@@ -45,4 +53,37 @@ type Nonzero struct {
 type Matrix interface {
 	AppendColumn(col []Nonzero) // Append a column given values for all of its nonzero elements
 	Dims() (rows, cols int)     // Return the matrix's dimensions
+}
+
+// c_malloc asks C to allocate memory.  For convenience to Go, the arguments
+// are like calloc's except that the size argument is a value, which c_malloc
+// will take the size of.  c_malloc panics on error (typically, out of memory).
+func c_malloc(nmemb int, sizeVal interface{}) unsafe.Pointer {
+	size := reflect.TypeOf(sizeVal).Size()
+	mem := C.malloc(C.size_t(uintptr(nmemb) * size))
+	if mem == nil {
+		panic("clp: malloc failed")
+	}
+	return mem
+}
+
+// c_malloc asks C to free memory.
+func c_free(mem unsafe.Pointer) {
+	C.free(mem)
+}
+
+// c_SetArrayInt assigns a[i] = v where a is a C.int array allocated by
+// c_malloc and i and v are Go ints.
+func c_SetArrayInt(a unsafe.Pointer, i, v int) {
+	eSize := unsafe.Sizeof(C.int(0))
+	ptr := unsafe.Pointer(uintptr(a) + uintptr(i)*eSize)
+	*(*C.int)(ptr) = C.int(v)
+}
+
+// c_SetArrayDouble assigns a[i] = v where a is a C.double array allocated by
+// c_malloc, i is an int, and v is a Go float64.
+func c_SetArrayDouble(a unsafe.Pointer, i int, v float64) {
+	eSize := unsafe.Sizeof(C.double(0.0))
+	ptr := unsafe.Pointer(uintptr(a) + uintptr(i)*eSize)
+	*(*C.double)(ptr) = C.double(v)
 }
