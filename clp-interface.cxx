@@ -22,5 +22,10 @@ extern "C" {
   {
     ((CoinPackedMatrix*)matrix)->appendCol(vecsize, vecind, vecelem);
   }
-  
+
+  // Dump a CoinPackedMatrix to a file in a human-readable format.
+  void pm_dump_matrix (clp_object* matrix, const char* fname)
+  {
+    ((CoinPackedMatrix*)matrix)->dumpMatrix(fname);
+  }  
 }
