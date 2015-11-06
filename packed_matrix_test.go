@@ -10,7 +10,7 @@ import (
 )
 
 // Test if we can create a packed matrix.
-func TestCreate(t *testing.T) {
+func TestCreateMatrix(t *testing.T) {
 	_ = clp.NewPackedMatrix()
 }
 

@@ -1,3 +1,5 @@
+// Packed matrices
+
 package clp
 
 // #cgo pkg-config: clp
