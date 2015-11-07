@@ -73,13 +73,25 @@ extern "C" {
   // Solve a model using the primal method.
   int simplex_primal (clp_object* model, int vp, int sfo)
   {
-    ((ClpSimplex*)model)->primal(vp, sfo);
+    return ((ClpSimplex*)model)->primal(vp, sfo);
   }
 
   // Solve a model using the dual method.
   int simplex_dual (clp_object* model, int vp, int sfo)
   {
-    ((ClpSimplex*)model)->dual(vp, sfo);
+    return ((ClpSimplex*)model)->dual(vp, sfo);
+  }
+
+  // Solve a model using the barrier method.
+  int simplex_barrier (clp_object* model, int xover)
+  {
+    return ((ClpSimplex*)model)->barrier(bool(xover));
+  }
+
+  // Solve a model using the reduced-gradient method.
+  int simplex_red_grad (clp_object* model, int phase)
+  {
+    return ((ClpSimplex*)model)->reducedGradient(phase);
   }
 
 }

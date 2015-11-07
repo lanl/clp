@@ -25,6 +25,8 @@ extern "C" {
   extern void simplex_set_opt_dir (clp_object* model, double dir);
   extern int simplex_primal (clp_object* model, int vp, int sfo);
   extern int simplex_dual (clp_object* model, int vp, int sfo);
+  extern int simplex_barrier (clp_object* model, int xover);
+  extern int simplex_red_grad (clp_object* model, int phase);
 
 #ifdef __cplusplus
 }

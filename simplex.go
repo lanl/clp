@@ -170,3 +170,24 @@ func (s *Simplex) Primal(vp ValuesPass, sfo StartFinishOptions) SimplexStatus {
 func (s *Simplex) Dual(vp ValuesPass, sfo StartFinishOptions) SimplexStatus {
 	return SimplexStatus(C.simplex_dual(s.model, C.int(vp), C.int(sfo)))
 }
+
+// Barrier solves a simplex model with the barrier method.  The argument says
+// whether to cross over to simplex.
+func (s *Simplex) Barrier(xover bool) SimplexStatus {
+	var b C.int
+	if xover {
+		b = 1
+	}
+	return SimplexStatus(C.simplex_barrier(s.model, b))
+}
+
+// ReducedGradient solves a simplex model with the reduced-gradient method.
+// The argument says whether to get a feasible solution (false) or to use a
+// solution.
+func (s *Simplex) ReducedGradient(phase bool) SimplexStatus {
+	var b C.int
+	if phase {
+		b = 1
+	}
+	return SimplexStatus(C.simplex_red_grad(s.model, b))
+}
