@@ -49,4 +49,17 @@ extern "C" {
     delete (ClpSimplex*)model;
   }
 
+  // Load a problem into a ClpSimplex.
+  void simplex_load_problem (clp_object* model, clp_object* matrix,
+			     const double* collb,
+			     const double* colub,
+			     const double* obj,
+			     const double* rowlb,
+			     const double* rowub,
+			     const double* rowObj)
+  {
+    ((ClpSimplex*)model)->loadProblem(*(CoinPackedMatrix*)matrix,
+				      collb, colub, obj,
+				      rowlb, rowub, rowObj);
+  }
 }
