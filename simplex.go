@@ -191,3 +191,23 @@ func (s *Simplex) ReducedGradient(phase bool) SimplexStatus {
 	}
 	return SimplexStatus(C.simplex_red_grad(s.model, b))
 }
+
+// Dims returns a model's dimensions (rows and columns).
+func (s *Simplex) Dims() (rows, cols int) {
+	var r, c C.int
+	C.simplex_get_dims(s.model, &r, &c)
+	rows = int(r)
+	cols = int(c)
+	return
+}
+
+// PrimalColumnSolution returns the primal column solution computed by a solver.
+func (s *Simplex) PrimalColumnSolution() []float64 {
+	_, nc := s.Dims()
+	soln := make([]float64, nc)
+	cSoln := C.simplex_get_prim_col_soln(s.model)
+	for i := range soln {
+		soln[i] = c_GetArrayDouble(unsafe.Pointer(cSoln), i)
+	}
+	return soln
+}

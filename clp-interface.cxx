@@ -94,4 +94,16 @@ extern "C" {
     return ((ClpSimplex*)model)->reducedGradient(phase);
   }
 
+  // Retrieve a simplex's rows and columns.
+  void simplex_get_dims (clp_object* model, int* nrows, int* ncols)
+  {
+    *nrows = ((ClpSimplex*)model)->getNumRows();
+    *ncols = ((ClpSimplex*)model)->getNumCols();
+  }
+
+  // Return a model's primal column solution.
+  double* simplex_get_prim_col_soln(clp_object* model)
+  {
+    return ((ClpSimplex*)model)->primalColumnSolution();
+  }
 }

@@ -80,10 +80,26 @@ func c_SetArrayInt(a unsafe.Pointer, i, v int) {
 	*(*C.int)(ptr) = C.int(v)
 }
 
+// c__GetArrayInt returns a[i] as a Go int where a is a C.int array allocated
+// by c_malloc and i is a Go ints.
+func c_GetArrayInt(a unsafe.Pointer, i int) int {
+	eSize := unsafe.Sizeof(C.int(0))
+	ptr := unsafe.Pointer(uintptr(a) + uintptr(i)*eSize)
+	return int(*(*C.int)(ptr))
+}
+
 // c_SetArrayDouble assigns a[i] = v where a is a C.double array allocated by
 // c_malloc, i is an int, and v is a Go float64.
 func c_SetArrayDouble(a unsafe.Pointer, i int, v float64) {
 	eSize := unsafe.Sizeof(C.double(0.0))
 	ptr := unsafe.Pointer(uintptr(a) + uintptr(i)*eSize)
 	*(*C.double)(ptr) = C.double(v)
+}
+
+// c_GetArrayDouble returns a[i] as a Go float64 where a is a C.double array
+// allocated by c_malloc and i is an int.
+func c_GetArrayDouble(a unsafe.Pointer, i int) float64 {
+	eSize := unsafe.Sizeof(C.double(0.0))
+	ptr := unsafe.Pointer(uintptr(a) + uintptr(i)*eSize)
+	return float64(*(*C.double)(ptr))
 }
