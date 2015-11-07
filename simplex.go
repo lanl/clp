@@ -111,3 +111,62 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 		(*C.double)(colLB), (*C.double)(colUB), (*C.double)(cObj),
 		(*C.double)(rowLB), (*C.double)(rowUB), (*C.double)(rObj))
 }
+
+// An OptDirection specifies the direction of optimization (maximize, minimize,
+// or ignore).
+type OptDirection float64
+
+// These constants are used to specify the objective sense in
+// Simplex.SetOptimizationDirection.
+const (
+	Ignore   OptDirection = 0.0  // Ignore the objective function
+	Maximize              = -1.0 // Maximize the objective function
+	Minimize              = 1.0  // Minimize the objective function
+)
+
+// SetOptimizationDirection specifies whether the objective function should be
+// minimized, maximized, or ignored.
+func (s *Simplex) SetOptimizationDirection(d OptDirection) {
+	C.simplex_set_opt_dir(s.model, C.double(d))
+}
+
+// A ValuesPass specifies whether to perform a values pass.
+type ValuesPass int
+
+// These constants specify the sort of value pass to perform.
+const (
+	NoValuesPass   ValuesPass = 0 // Use status variables to determine basis and solution
+	DoValuesPass              = 1 // Do a values pass so variables not in the basis are given their current values and one pass of variables is done to clean up the basis with an equal or better objective value
+	OnlyValuesPass            = 2 // Do only the values pass and then stop
+)
+
+// A StartFinishOptions is a bit vector for options related to the algorithm's
+// initialization and finalization.
+type StartFinishOptions uint
+
+// These constants can be or'd together to specify start and finish options.
+const (
+	KeepWorkAreas        StartFinishOptions = 1 // Do not delete work areas and factorization at end
+	OldFactorization                        = 2 // Use old factorization if same number of rows
+	ReduceInitialization                    = 4 // Skip as much initialization of work areas as possible
+)
+
+// SimplexStatus represents the status of a simplex optimization.
+type SimplexStatus int
+
+// These constants are the possible values for a SimplexStatus.
+const (
+	Optimal    SimplexStatus = 0
+	Infeasible               = 1
+	Unbounded                = 2
+)
+
+// Primal solves a simplex model with the primal method.
+func (s *Simplex) Primal(vp ValuesPass, sfo StartFinishOptions) SimplexStatus {
+	return SimplexStatus(C.simplex_primal(s.model, C.int(vp), C.int(sfo)))
+}
+
+// Dual solves a simplex model with the dual method.
+func (s *Simplex) Dual(vp ValuesPass, sfo StartFinishOptions) SimplexStatus {
+	return SimplexStatus(C.simplex_dual(s.model, C.int(vp), C.int(sfo)))
+}

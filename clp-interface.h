@@ -22,6 +22,9 @@ extern "C" {
                                     const double* obj,
                                     const double* rowlb, const double* rowub,
                                     const double* rowObj);
+  extern void simplex_set_opt_dir (clp_object* model, double dir);
+  extern int simplex_primal (clp_object* model, int vp, int sfo);
+  extern int simplex_dual (clp_object* model, int vp, int sfo);
 
 #ifdef __cplusplus
 }

@@ -40,6 +40,7 @@ extern "C" {
   clp_object* new_simplex_model (void)
   {
     ClpSimplex* model = new ClpSimplex();
+    model->messageHandler()->setLogLevel(0);  // Not Go-like to log to a hard-wired location.
     return (clp_object*)model;
   }
 
@@ -51,15 +52,34 @@ extern "C" {
 
   // Load a problem into a ClpSimplex.
   void simplex_load_problem (clp_object* model, clp_object* matrix,
-			     const double* collb,
-			     const double* colub,
-			     const double* obj,
-			     const double* rowlb,
-			     const double* rowub,
-			     const double* rowObj)
+                             const double* collb,
+                             const double* colub,
+                             const double* obj,
+                             const double* rowlb,
+                             const double* rowub,
+                             const double* rowObj)
   {
     ((ClpSimplex*)model)->loadProblem(*(CoinPackedMatrix*)matrix,
-				      collb, colub, obj,
-				      rowlb, rowub, rowObj);
+                                      collb, colub, obj,
+                                      rowlb, rowub, rowObj);
   }
+
+  // Set the optimization direction.
+  void simplex_set_opt_dir (clp_object* model, double dir)
+  {
+    ((ClpSimplex*)model)->setOptimizationDirection(dir);
+  }
+
+  // Solve a model using the primal method.
+  int simplex_primal (clp_object* model, int vp, int sfo)
+  {
+    ((ClpSimplex*)model)->primal(vp, sfo);
+  }
+
+  // Solve a model using the dual method.
+  int simplex_dual (clp_object* model, int vp, int sfo)
+  {
+    ((ClpSimplex*)model)->dual(vp, sfo);
+  }
+
 }
