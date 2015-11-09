@@ -17,7 +17,8 @@ Linear programming is an optimization technique.  Given an objective function,
 such as a + b, and a set of constraints in the form of linear inequalities,
 such as 0 ≤ 2a + b ≤ 10 and 3 ≤ 2b − a ≤ 8, find values for the variables that
 maximizes or minimizes the objective function.  In this example, the maximum
-value of a + b is 7.6, which is achieved when a = 2.4 and b = 5.2.
+value of a + b is 7.6, which is achieved when a = 2.4 and b = 5.2.  (A package
+example below shows how to set up and solve this precise problem.)
 
 The Go package currently implements only a tiny subset of the CLP library
 but a subset that suffices to solve basic optimization problems.
