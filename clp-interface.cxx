@@ -101,9 +101,39 @@ extern "C" {
     *ncols = ((ClpSimplex*)model)->getNumCols();
   }
 
+  // Set or unset problem scaling.
+  void simplex_scaling (clp_object* model, int mode)
+  {
+    ((ClpSimplex*)model)->scaling(mode);
+  }
+
   // Return a model's primal column solution.
-  double* simplex_get_prim_col_soln(clp_object* model)
+  double* simplex_get_prim_col_soln (clp_object* model)
   {
     return ((ClpSimplex*)model)->primalColumnSolution();
+  }
+
+  // Return a model's dual column solution.
+  double* simplex_get_dual_col_soln (clp_object* model)
+  {
+    return ((ClpSimplex*)model)->dualColumnSolution();
+  }
+
+  // Return a model's primal row solution.
+  double* simplex_get_prim_row_soln (clp_object* model)
+  {
+    return ((ClpSimplex*)model)->primalRowSolution();
+  }
+
+  // Return a model's dual row solution.
+  double* simplex_get_dual_row_soln (clp_object* model)
+  {
+    return ((ClpSimplex*)model)->dualRowSolution();
+  }
+
+  // Return the value of the objective function.
+  double simplex_obj_val (clp_object* model)
+  {
+    return ((ClpSimplex*)model)->objectiveValue();
   }
 }

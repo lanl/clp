@@ -28,7 +28,12 @@ extern "C" {
   extern int simplex_barrier (clp_object* model, int xover);
   extern int simplex_red_grad (clp_object* model, int phase);
   extern void simplex_get_dims (clp_object* model, int* nrows, int* ncols);
-  extern double* simplex_get_prim_col_soln(clp_object* model);
+  extern void simplex_scaling (clp_object* model, int mode);
+  extern double* simplex_get_prim_col_soln (clp_object* model);
+  extern double* simplex_get_dual_col_soln (clp_object* model);
+  extern double* simplex_get_prim_row_soln (clp_object* model);
+  extern double* simplex_get_dual_row_soln (clp_object* model);
+  extern double simplex_obj_val (clp_object* model);
 
 #ifdef __cplusplus
 }

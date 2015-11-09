@@ -146,7 +146,8 @@ type StartFinishOptions uint
 
 // These constants can be or'd together to specify start and finish options.
 const (
-	KeepWorkAreas        StartFinishOptions = 1 // Do not delete work areas and factorization at end
+	NoStartFinishOptions StartFinishOptions = 0 // Convenient name for no special options
+	KeepWorkAreas                           = 1 // Do not delete work areas and factorization at end
 	OldFactorization                        = 2 // Use old factorization if same number of rows
 	ReduceInitialization                    = 4 // Skip as much initialization of work areas as possible
 )
@@ -201,6 +202,23 @@ func (s *Simplex) Dims() (rows, cols int) {
 	return
 }
 
+// Scaling indicates how problem data are to be scaled.
+type Scaling int
+
+// These constants can be passed as an argument to Simplex.SetScaling.
+const (
+	NoScaling          Scaling = 0 // No scaling
+	EquilibriumScaling         = 1 // Equilibrium scaling
+	GeometricScaling           = 2 // Geometric scaling
+	AutoScaling                = 3 // Automatic scaling
+	AutoInitScaling            = 4 // Automatic scaling but like the initial solve in branch-and-bound
+)
+
+// SetScaling determines how the problem data are to be scaled.
+func (s *Simplex) SetScaling(sc Scaling) {
+	C.simplex_scaling(s.model, C.int(sc))
+}
+
 // PrimalColumnSolution returns the primal column solution computed by a solver.
 func (s *Simplex) PrimalColumnSolution() []float64 {
 	_, nc := s.Dims()
@@ -210,4 +228,43 @@ func (s *Simplex) PrimalColumnSolution() []float64 {
 		soln[i] = c_GetArrayDouble(unsafe.Pointer(cSoln), i)
 	}
 	return soln
+}
+
+// DualColumnSolution returns the dual column solution computed by a solver.
+func (s *Simplex) DualColumnSolution() []float64 {
+	_, nc := s.Dims()
+	soln := make([]float64, nc)
+	cSoln := C.simplex_get_dual_col_soln(s.model)
+	for i := range soln {
+		soln[i] = c_GetArrayDouble(unsafe.Pointer(cSoln), i)
+	}
+	return soln
+}
+
+// PrimalRowSolution returns the primal row solution computed by a solver.
+func (s *Simplex) PrimalRowSolution() []float64 {
+	_, nc := s.Dims()
+	soln := make([]float64, nc)
+	cSoln := C.simplex_get_prim_row_soln(s.model)
+	for i := range soln {
+		soln[i] = c_GetArrayDouble(unsafe.Pointer(cSoln), i)
+	}
+	return soln
+}
+
+// DualRowSolution returns the dual row solution computed by a solver.
+func (s *Simplex) DualRowSolution() []float64 {
+	_, nc := s.Dims()
+	soln := make([]float64, nc)
+	cSoln := C.simplex_get_dual_row_soln(s.model)
+	for i := range soln {
+		soln[i] = c_GetArrayDouble(unsafe.Pointer(cSoln), i)
+	}
+	return soln
+}
+
+// ObjectiveValue returns the value of the objective function after
+// optimization.
+func (s *Simplex) ObjectiveValue() float64 {
+	return float64(C.simplex_obj_val(s.model))
 }
