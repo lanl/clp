@@ -2,9 +2,8 @@
 // All rights reserved.
 
 /*
-Package clp provides access to the COIN-OR Linear Program (CLP)
-library.  As the name implies, CLP is a solver for linear-programming
-problems:
+Package clp provides an interface to the COIN-OR Linear Programming (CLP)
+library.  As the name implies, CLP is a solver for linear-programming problems:
 
     CLP is a high quality open-source LP solver. Its main strengths are its
     Dual and Primal Simplex algorithms. It also has a barrier algorithm for
