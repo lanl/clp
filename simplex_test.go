@@ -150,3 +150,31 @@ func ExampleSimplex_EasyLoadDenseProblem() {
 	// b = 5.2
 	// a + b = 7.6
 }
+
+// Test if we can solve a problem with far more equations than variables.
+func TestEasyManyEqns(t *testing.T) {
+	// Set up the following problem: Minimize a subject to {1 ≤ a, 2 ≤ a,
+	// …, N ≤ a}.
+	const nEqns = 100
+	simp := clp.NewSimplex()
+	inf := math.Inf(1)
+	eqns := make([][]float64, nEqns)
+	for i := range eqns {
+		eqns[i] = []float64{float64(i + 1), 1.0, inf}
+	}
+	simp.EasyLoadDenseProblem([]float64{1.0}, eqns)
+	simp.SetOptimizationDirection(clp.Minimize)
+
+	// Solve the optimization problem.
+	simp.Primal(clp.NoValuesPass, clp.NoStartFinishOptions)
+	v := simp.ObjectiveValue()
+	soln := simp.PrimalColumnSolution()
+
+	// Check the results.
+	if !closeTo(soln[0], 100.0, 0.5) {
+		t.Fatalf("Expected [100] but observed %v", soln)
+	}
+	if !closeTo(v, 100, 0.5) {
+		t.Fatalf("Expected 100 but observed %.10g", v)
+	}
+}
