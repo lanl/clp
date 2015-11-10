@@ -268,3 +268,45 @@ func (s *Simplex) DualRowSolution() []float64 {
 func (s *Simplex) ObjectiveValue() float64 {
 	return float64(C.simplex_obj_val(s.model))
 }
+
+// EasyLoadDenseProblem has no exact equivalent in the CLP library.  It is a
+// convenient wrapper for LoadProblem that lets callers specify problems in a
+// more natural, equation-like form (as opposed to CLP's normal matrix form).
+// The main limitation is that it does not provide a space-efficient way to
+// represent a sparse coefficient matrix; all coefficients must be specified,
+// even when zero.  A secondary limitation is that it does not support column
+// bounds or a row objective function.
+//
+// The arguments to EasyLoadDenseProblem are the coefficients of the objective
+// function and a matrix in which each row is of the form {lower bound,
+// coeff_1, coeff_2, …, coeff_N, upper bound}.
+func (s *Simplex) EasyLoadDenseProblem(obj []float64, eqns [][]float64) {
+	// Extract the lower and upper bounds for each equation.
+	nRows := len(eqns)
+	nCols := len(eqns[0])
+	rb := make([]Bounds, nRows)
+	for i, row := range eqns {
+		rb[i] = Bounds{
+			Lower: row[0],
+			Upper: row[nCols-1],
+		}
+	}
+
+	// Add each internal column one-by-one to the model.
+	mat := NewPackedMatrix()
+	for c := 1; c < nCols-1; c++ {
+		col := make([]Nonzero, 0)
+		for r, row := range eqns {
+			if row[c] != 0.0 {
+				col = append(col, Nonzero{
+					Index: r,
+					Value: row[c],
+				})
+			}
+		}
+		mat.AppendColumn(col)
+	}
+
+	// Load the problem into the model.
+	s.LoadProblem(mat, nil, obj, rb, nil)
+}
