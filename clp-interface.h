@@ -17,7 +17,6 @@ extern "C" {
   extern void pm_get_sparse_data (clp_object* matrix, const int** starts,
                                   const int** lengths, const int** indices,
                                   const double** elements);
-  extern void pm_dump_matrix (clp_object* matrix, const char* fname);
   extern clp_object* new_simplex_model (void);
   extern void free_simplex_model (clp_object* model);
   extern void simplex_load_problem (clp_object* model, clp_object* matrix,

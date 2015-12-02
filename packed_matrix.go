@@ -5,9 +5,8 @@ package clp
 // #include "clp-interface.h"
 import "C"
 import (
+	"fmt"
 	"io"
-	"io/ioutil"
-	"os"
 	"runtime"
 	"unsafe"
 )
@@ -67,7 +66,9 @@ func (pm *PackedMatrix) Dims() (rows, cols int) {
 	return
 }
 
-// SparseData returns a packed matrix's data in a sparse representation.
+// SparseData returns a packed matrix's data in a sparse representation.  It
+// corresponds to the getVectorStarts(), getVectorLengths(), getIndices(), and
+// getElements() methods in the CLP library's CoinPackedMatrix class.
 func (pm *PackedMatrix) SparseData() (starts, lengths, indices []int, elements []float64) {
 	// Retrieve pointers into the matrix's internal state.
 	var cstarts *C.int
@@ -97,7 +98,10 @@ func (pm *PackedMatrix) SparseData() (starts, lengths, indices []int, elements [
 	return
 }
 
-// DenseData returns a packed matrix's data in a dense representation.
+// DenseData returns a packed matrix's data in a dense representation.  This
+// method has no exact equivalent in the CLP library.  It is merely a
+// convenient wrapper for SparseMatrix that makes it easy to work with smaller
+// matrices.
 func (pm *PackedMatrix) DenseData() [][]float64 {
 	// Create a dense matrix to populate and return.
 	nr, nc := pm.Dims()
@@ -121,26 +125,29 @@ func (pm *PackedMatrix) DenseData() [][]float64 {
 // DumpMatrix outputs a packed matrix in a human-readable format.  This method
 // is intended primarily to help with testing and debugging.
 func (pm *PackedMatrix) DumpMatrix(w io.Writer) error {
-	// CLP's dumpMatrix function accepts a filename as an argument (or NULL
-	// for standard output).  To make DumpMatrix more Go-like, we write to
-	// a temporary file, then read the result back into an io.Writer.  Yes,
-	// that's quite kludgy, but this method is intended to be primarily a
-	// test/debug function, not a critical component of application
-	// execution.
-	out, err := ioutil.TempFile("", "clp-")
-	if err != nil {
-		return err
+	// Reproduce CoinPackedMatrix::dumpMatrix() from CoinPackedMatrix.cpp.
+	// We don't call the original C++ method because it writes to a file,
+	// while we'd prefer to use an io.Writer.
+	starts, lengths, indices, elements := pm.SparseData()
+	var err error
+	printf := func(format string, a ...interface{}) {
+		// Borrow the error-checking trick from "Errors are values"
+		// (https://blog.golang.org/errors-are-values).
+		if err != nil {
+			return
+		}
+		_, err = fmt.Fprintf(w, format, a...)
 	}
-	outName := out.Name()
-	defer os.Remove(outName)
-	fn := C.CString(outName)
-	defer c_free(unsafe.Pointer(fn))
-	C.pm_dump_matrix(pm.matrix, fn)
-	in, err := os.Open(outName)
-	if err != nil {
-		return err
+	printf("Dumping matrix...\n\n")
+	printf("colordered: %d\n", 1) // Only column ordered is currently supported.
+	minor, major := pm.Dims()
+	printf("major: %d   minor: %d\n", major, minor)
+	for i := 0; i < major; i++ {
+		printf("vec %d has length %d with entries:\n", i, lengths[i])
+		for j := starts[i]; j < starts[i]+lengths[i]; j++ {
+			printf("        %15d  %40.25f\n", indices[j], elements[j])
+		}
 	}
-	defer in.Close()
-	_, err = io.Copy(w, in)
+	printf("\nFinished dumping matrix\n")
 	return err
 }

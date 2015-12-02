@@ -32,22 +32,16 @@ extern "C" {
 
   // Retrieve a CoinPackedMatrix's data in a sparse representation.
   void pm_get_sparse_data (clp_object* matrix,
-			   const int** starts,
-			   const int** lengths,
-			   const int** indices,
-			   const double** elements)
+                           const int** starts,
+                           const int** lengths,
+                           const int** indices,
+                           const double** elements)
   {
     CoinPackedMatrix* pm = (CoinPackedMatrix*)matrix;
     *starts = pm->getVectorStarts();
     *lengths = pm->getVectorLengths();
     *indices = pm->getIndices();
     *elements = pm->getElements();
-  }   
-
-  // Dump a CoinPackedMatrix to a file in a human-readable format.
-  void pm_dump_matrix (clp_object* matrix, const char* fname)
-  {
-    ((CoinPackedMatrix*)matrix)->dumpMatrix(fname);
   }
 
   // Create a new ClpSimplex.
