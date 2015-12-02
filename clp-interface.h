@@ -14,6 +14,9 @@ extern "C" {
   extern void pm_append_col (clp_object* matrix, const int vecsize,
                              const int* vecind, const double* vecelem);
   extern void pm_get_dims (clp_object* matrix, int* nrows, int* ncols);
+  extern void pm_get_sparse_data (clp_object* matrix, const int** starts,
+                                  const int** lengths, const int** indices,
+                                  const double** elements);
   extern void pm_dump_matrix (clp_object* matrix, const char* fname);
   extern clp_object* new_simplex_model (void);
   extern void free_simplex_model (clp_object* model);

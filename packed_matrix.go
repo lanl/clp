@@ -67,6 +67,57 @@ func (pm *PackedMatrix) Dims() (rows, cols int) {
 	return
 }
 
+// SparseData returns a packed matrix's data in a sparse representation.
+func (pm *PackedMatrix) SparseData() (starts, lengths, indices []int, elements []float64) {
+	// Retrieve pointers into the matrix's internal state.
+	var cstarts *C.int
+	var clens *C.int
+	var cidxs *C.int
+	var celts *C.double
+	C.pm_get_sparse_data(pm.matrix, &cstarts, &clens, &cidxs, &celts)
+
+	// Convert from C arrays to Go slices.  We assume column ordering
+	// because we don't yet give the user the ability to change the
+	// ordering from the default column-ordered.
+	_, nc := pm.Dims()
+	starts = make([]int, nc)
+	lengths = make([]int, nc)
+	for i := range starts {
+		starts[i] = c_GetArrayInt(unsafe.Pointer(cstarts), i)
+		lengths[i] = c_GetArrayInt(unsafe.Pointer(clens), i)
+	}
+	indices = make([]int, 0, nc)
+	elements = make([]float64, 0, nc)
+	for i := 0; i < nc; i++ {
+		for j := starts[i]; j < starts[i]+lengths[i]; j++ {
+			indices = append(indices, c_GetArrayInt(unsafe.Pointer(cidxs), j))
+			elements = append(elements, c_GetArrayDouble(unsafe.Pointer(celts), j))
+		}
+	}
+	return
+}
+
+// DenseData returns a packed matrix's data in a dense representation.
+func (pm *PackedMatrix) DenseData() [][]float64 {
+	// Create a dense matrix to populate and return.
+	nr, nc := pm.Dims()
+	mat := make([][]float64, nr)
+	for r := range mat {
+		mat[r] = make([]float64, nc)
+	}
+
+	// Populate the dense matrix from the sparse representation.
+	starts, lengths, indices, elements := pm.SparseData()
+	for c, st := range starts {
+		iend := st + lengths[c]
+		for i := st; i < iend; i++ {
+			r := indices[i]
+			mat[r][c] = elements[i]
+		}
+	}
+	return mat
+}
+
 // DumpMatrix outputs a packed matrix in a human-readable format.  This method
 // is intended primarily to help with testing and debugging.
 func (pm *PackedMatrix) DumpMatrix(w io.Writer) error {
