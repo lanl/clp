@@ -68,7 +68,9 @@ func TestEasyPrimalSolve(t *testing.T) {
 	// Set up the following problem: Minimize a + 2b subject to {4 ≤ a + b
 	// ≤ 9, -5 ≤ 3a − b ≤ 3}.
 	simp := clp.NewSimplex()
-	simp.EasyLoadDenseProblem([]float64{1.0, 2.0}, // a + 2b
+	simp.EasyLoadDenseProblem(
+		[]float64{1.0, 2.0}, // a + 2b
+		nil,                 // No explicit bounds on A or B
 		[][]float64{
 			// LB  A    B   UB
 			{4.0, 1.0, 1.0, 9.0},   // 4 ≤ a + b ≤ 9
@@ -131,6 +133,7 @@ func ExampleSimplex_EasyLoadDenseProblem() {
 	simp.EasyLoadDenseProblem(
 		//         A    B
 		[]float64{1.0, 1.0}, // a + b
+		nil,                 // No explicit bounds on A or B
 		[][]float64{
 			// LB  A    B    UB
 			{0.0, 2.0, 1.0, 10.0}, // 0 ≤ 2a + b ≤ 10
@@ -151,18 +154,18 @@ func ExampleSimplex_EasyLoadDenseProblem() {
 	// a + b = 7.6
 }
 
-// Test if we can solve a problem with far more equations than variables.
-func TestEasyManyEqns(t *testing.T) {
+// Test if we can solve a problem with far more inequalities than variables.
+func TestEasyManyIneqs(t *testing.T) {
 	// Set up the following problem: Minimize a subject to {1 ≤ a, 2 ≤ a,
 	// …, N ≤ a}.
-	const nEqns = 100
+	const nIneqs = 100
 	simp := clp.NewSimplex()
 	inf := math.Inf(1)
-	eqns := make([][]float64, nEqns)
-	for i := range eqns {
-		eqns[i] = []float64{float64(i + 1), 1.0, inf}
+	ineqs := make([][]float64, nIneqs)
+	for i := range ineqs {
+		ineqs[i] = []float64{float64(i + 1), 1.0, inf}
 	}
-	simp.EasyLoadDenseProblem([]float64{1.0}, eqns)
+	simp.EasyLoadDenseProblem([]float64{1.0}, nil, ineqs)
 	simp.SetOptimizationDirection(clp.Minimize)
 
 	// Solve the optimization problem.
