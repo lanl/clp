@@ -37,6 +37,9 @@ extern "C" {
   extern double* simplex_get_dual_row_soln (clp_object* model);
   extern double simplex_obj_val (clp_object* model);
 
+  extern void simplex_primal_set_tolerance(clp_object* model, double tolerance);
+  extern double simplex_primal_get_tolerance(clp_object* model);
+
 #ifdef __cplusplus
 }
 #endif
