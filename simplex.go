@@ -182,6 +182,18 @@ func (s *Simplex) Barrier(xover bool) SimplexStatus {
 	return SimplexStatus(C.simplex_barrier(s.model, b))
 }
 
+
+func (s *Simplex) GetPrimalTolerance() float64 {
+	var tolerance C.double
+	tolerance = C.simplex_primal_get_tolerance(s.model)
+	return float64(tolerance)
+}
+
+
+func (s *Simplex) SetPrimalTolerance(tolerance float64) {
+	C.simplex_primal_set_tolerance(s.model, C.double(tolerance))
+}
+
 // ReducedGradient solves a simplex model with the reduced-gradient method.
 // The argument says whether to get a feasible solution (false) or to use a
 // solution.

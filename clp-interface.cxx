@@ -78,6 +78,16 @@ extern "C" {
     ((ClpSimplex*)model)->setOptimizationDirection(dir);
   }
 
+  void simplex_primal_set_tolerance(clp_object* model, double tolerance)
+  {
+    ((ClpSimplex*)model)->setPrimalTolerance(tolerance);
+  }
+
+  double simplex_primal_get_tolerance(clp_object* model)
+  {
+    return ((ClpSimplex*)model)->primalTolerance();
+  }
+
   // Solve a model using the primal method.
   int simplex_primal (clp_object* model, int vp, int sfo)
   {
