@@ -182,14 +182,18 @@ func (s *Simplex) Barrier(xover bool) SimplexStatus {
 	return SimplexStatus(C.simplex_barrier(s.model, b))
 }
 
-
-func (s *Simplex) GetPrimalTolerance() float64 {
+// PrimalTolerance returns the tolerance currently associated with variables in
+// a simplex model.
+func (s *Simplex) PrimalTolerance() float64 {
 	var tolerance C.double
 	tolerance = C.simplex_primal_get_tolerance(s.model)
 	return float64(tolerance)
 }
 
-
+// SetPrimalTolerance assigns a new variable tolerance to a simplex model.
+// According to the Clp documentation, "a variable is deemed primal feasible if
+// it is less than the tolerance…below its lower bound and less than it above
+// its upper bound".
 func (s *Simplex) SetPrimalTolerance(tolerance float64) {
 	C.simplex_primal_set_tolerance(s.model, C.double(tolerance))
 }

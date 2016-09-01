@@ -92,14 +92,16 @@ func TestEasyPrimalSolve(t *testing.T) {
 	}
 }
 
+// Ensure that we can both query and change the primal tolerance used in a
+// simplex model.
 func TestGetSetSimplexPrimalTolerance(t *testing.T) {
 	simp := clp.NewSimplex()
 
-	initial := simp.GetPrimalTolerance()
-	simp.SetPrimalTolerance(initial*2.0)
-	reset := simp.GetPrimalTolerance()
+	initial := simp.PrimalTolerance()
+	simp.SetPrimalTolerance(initial * 2.0)
+	reset := simp.PrimalTolerance()
 
-	if reset  != initial*2.0 {
+	if reset != initial*2.0 {
 		t.Fatalf("Expected %f but observed %f", initial*2.0, reset)
 	}
 }
