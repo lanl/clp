@@ -92,6 +92,18 @@ func TestEasyPrimalSolve(t *testing.T) {
 	}
 }
 
+func TestGetSetSimplexPrimalTolerance(t *testing.T) {
+	simp := clp.NewSimplex()
+
+	initial := simp.GetPrimalTolerance()
+	simp.SetPrimalTolerance(initial*2.0)
+	reset := simp.GetPrimalTolerance()
+
+	if reset  != initial*2.0 {
+		t.Fatalf("Expected %f but observed %f", initial*2.0, reset)
+	}
+}
+
 // Maximize a + b subject to both 0 ≤ 2a + b ≤ 10 and 3 ≤ 2b − a ≤ 8.
 func ExampleSimplex_LoadProblem() {
 	// Set up the problem.
