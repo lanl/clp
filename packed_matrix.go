@@ -31,6 +31,10 @@ func NewPackedMatrix() *PackedMatrix {
 			c_free(p)
 		}
 	})
+
+	//pre-allocate our matrix
+	//C.reserve_packed_matrix(m.matrix, 1000, 1000, 0)
+
 	return m
 }
 
@@ -55,6 +59,15 @@ func (pm *PackedMatrix) AppendColumn(col []Nonzero) {
 
 	// Tell our C wrapper function to append the column.
 	C.pm_append_col(pm.matrix, C.int(nElts), (*C.int)(rows), (*C.double)(vals))
+}
+
+
+// AppendColumn appends a sparse column to a packed matrix.  The column is
+// specified as a slice of {row number, value} pairs.
+func (pm *PackedMatrix) AppendColumns(cols [][]Nonzero) {
+	for _, col := range cols {
+		pm.AppendColumn(col)
+	}
 }
 
 // Dims returns a packed matrix's dimensions (rows and columns).

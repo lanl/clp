@@ -23,6 +23,13 @@ extern "C" {
     ((CoinPackedMatrix*)matrix)->appendCol(vecsize, vecind, vecelem);
   }
 
+
+  // Append a (sparse) column to a CoinPackedMatrix.
+  void reserve_packed_matrix (clp_object* matrix, int newMaxMajorDim, int newMaxSize, int create)
+  {
+    ((CoinPackedMatrix*)matrix)->reserve(newMaxMajorDim, newMaxSize, create == 1);
+  }
+
   // Retrieve a CoinPackedMatrix's rows and columns.
   void pm_get_dims (clp_object* matrix, int* nrows, int* ncols)
   {

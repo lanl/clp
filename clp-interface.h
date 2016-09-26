@@ -19,6 +19,7 @@ extern "C" {
                                   const double** elements);
   extern clp_object* new_simplex_model (void);
   extern void free_simplex_model (clp_object* model);
+  extern void reserve_packed_matrix (clp_object* model, int newMaxMajorDim, int newMaxSize, int create);
   extern void simplex_load_problem (clp_object* model, clp_object* matrix,
                                     const double* collb, const double* colub,
                                     const double* obj,
