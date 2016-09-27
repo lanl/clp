@@ -8,6 +8,7 @@ import (
 
 	_ "net/http/pprof"
 	"net/http"
+	"fmt"
 )
 
 func main() {
@@ -20,8 +21,8 @@ func main() {
 	}()
 
 
-	goroutines := 30
-	n := 1000
+	goroutines := 70
+	n := 550
 
 	wg := sync.WaitGroup{}
 
@@ -29,15 +30,18 @@ func main() {
 
 	for i := 0; i < goroutines; i++ {
 		go func() {
+
+			//make a nonzero array
+			col := make([]clp.Nonzero, 0)
+			for j := 0; j < n; j++ {
+				col = append(col, clp.Nonzero{Index: j, Value: 0.0 + float64(n) * 0.01})
+			}
+
 			for {
 				start := time.Now()
 				pm := clp.NewPackedMatrix()
 
-				//make a nonzero array
-				col := make([]clp.Nonzero, 0)
-				for j := 0; j < n; j++ {
-					col = append(col, clp.Nonzero{Index: j, Value: 0.0 + float64(n) * 0.01})
-				}
+
 
 				for j := 0; j < n; j++ {
 
@@ -49,13 +53,13 @@ func main() {
 
 				dur := time.Now().Sub(start)
 
-				log.Printf("%d %.2f", i, dur.Seconds())
+				fmt.Printf("%d %.2f\n", i, dur.Seconds())
 			}
 
 		}()
 
 
-		time.Sleep(5*time.Second)
+		time.Sleep(3*time.Second)
 	}
 
 
