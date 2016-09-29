@@ -9,12 +9,16 @@ import (
 	"io"
 	"runtime"
 	"unsafe"
+	"log"
 )
 
 // A PackedMatrix is a basic implementation of the Matrix interface.
 type PackedMatrix struct {
 	matrix *C.clp_object    // Pointer to a CoinPackedMatrix
 	allocs []unsafe.Pointer // Row/column data to which the CoinPackedMatrix points
+
+	pendingColumns [][]Nonzero
+	totalDataLen int
 }
 
 // NewPackedMatrix allocates a new, empty, packed matrix.
@@ -59,6 +63,58 @@ func (pm *PackedMatrix) AppendColumn(col []Nonzero) {
 
 	// Tell our C wrapper function to append the column.
 	C.pm_append_col(pm.matrix, C.int(nElts), (*C.int)(rows), (*C.double)(vals))
+}
+
+
+
+
+// AppendColumn appends a sparse column to a packed matrix.  The column is
+// specified as a slice of {row number, value} pairs.
+// Additionally, we do not call into cgo at this point or incur any malloc hits
+// As this trashes multicore performance. Once all columns are buffered, we can call a final
+// AppendBufferedColumnsBatched() to flush all waiting columns to the matrix for solving
+func (pm *PackedMatrix) BufferColumn(col []Nonzero) {
+	pm.pendingColumns = append(pm.pendingColumns, col)
+	pm.totalDataLen += len(col)
+}
+
+
+//Flushes all buffered columns to the matrix in one go with minimal malloc calls
+func (pm *PackedMatrix) AppendBufferedColumnsBatched() {
+
+	log.Println("appending buffered rows")
+
+	//so we need to allocate a few chunks of memory here to fit the
+	//CoinPackedMatrix::appendCols signature
+
+	numCols := len(pm.pendingColumns)
+
+	log.Println(numCols)
+	log.Println(pm.totalDataLen)
+
+
+	if numCols == 0 {
+		return
+	}
+
+	columnStarts := make([]C.int, numCols)
+	rowIndeces := make([]C.int, pm.totalDataLen)
+	rowElements := make([]C.double, pm.totalDataLen)
+
+	dataPosition := 0
+
+	for col, colData := range pm.pendingColumns {
+		columnStarts[col] = C.int(dataPosition)
+		for _, nz := range colData {
+			rowIndeces[dataPosition] = C.int(nz.Index)
+			rowElements[dataPosition] = C.double(nz.Value)
+
+			dataPosition++
+
+
+		}
+	}
+	C.pm_append_cols(pm.matrix, C.int(numCols), &columnStarts[0], &rowIndeces[0], &rowElements[0], C.int(0))
 }
 
 

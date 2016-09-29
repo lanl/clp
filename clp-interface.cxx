@@ -1,4 +1,5 @@
 #include <coin/ClpSimplex.hpp>
+#include <coin/CoinFinite.hpp>
 #include "clp-interface.h"
 
 extern "C" {
@@ -21,6 +22,13 @@ extern "C" {
                       const int* vecind, const double* vecelem)
   {
     ((CoinPackedMatrix*)matrix)->appendCol(vecsize, vecind, vecelem);
+  }
+
+
+  void pm_append_cols (clp_object* matrix, const int numCols, const int * columnStarts,
+                        const int * row, const double * element, int numberRows)
+  {
+    ((CoinPackedMatrix*)matrix)->appendCols(numCols, columnStarts, row, element, numberRows);
   }
 
 
