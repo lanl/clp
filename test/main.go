@@ -22,10 +22,24 @@ func main() {
 	}
 
 	pm.AppendBufferedColumnsBatched()
+
+
+	simp := clp.NewSimplex()
+
 	log.Println("lol?")
+	simp.LoadProblem(pm, nil, nil, nil, nil)
+
+	simp.SetOptimizationDirection(clp.Maximize)
+
+	simp.SetScaling(clp.Scaling(2))
+
+	simp.SetPrimalTolerance(1e-9)
 
 
+	// Solve the optimization problem.
+	simp.Primal(clp.NoValuesPass, clp.NoStartFinishOptions)
 
+	simp.PrimalColumnSolution()
 
 
 }

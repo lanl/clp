@@ -36,9 +36,6 @@ func NewPackedMatrix() *PackedMatrix {
 		}
 	})
 
-	//pre-allocate our matrix
-	//C.reserve_packed_matrix(m.matrix, 1000, 1000, 0)
-
 	return m
 }
 
@@ -98,7 +95,7 @@ func (pm *PackedMatrix) AppendBufferedColumnsBatched() {
 	}
 
 	columnStarts := make([]C.int, numCols)
-	rowIndeces := make([]C.int, pm.totalDataLen)
+	rowIndices := make([]C.int, pm.totalDataLen)
 	rowElements := make([]C.double, pm.totalDataLen)
 
 	dataPosition := 0
@@ -106,7 +103,7 @@ func (pm *PackedMatrix) AppendBufferedColumnsBatched() {
 	for col, colData := range pm.pendingColumns {
 		columnStarts[col] = C.int(dataPosition)
 		for _, nz := range colData {
-			rowIndeces[dataPosition] = C.int(nz.Index)
+			rowIndices[dataPosition] = C.int(nz.Index)
 			rowElements[dataPosition] = C.double(nz.Value)
 
 			dataPosition++
@@ -114,7 +111,18 @@ func (pm *PackedMatrix) AppendBufferedColumnsBatched() {
 
 		}
 	}
-	C.pm_append_cols(pm.matrix, C.int(numCols), &columnStarts[0], &rowIndeces[0], &rowElements[0], C.int(0))
+
+
+
+
+	log.Println("s", columnStarts)
+	log.Println("i", rowIndices)
+	log.Println("e", rowElements)
+
+	C.pm_append_cols(pm.matrix, C.int(numCols), &columnStarts[0], &rowIndices[0], &rowElements[0], C.int(pm.totalDataLen))
+
+	pm.pendingColumns = nil
+	pm.totalDataLen = 0
 }
 
 
