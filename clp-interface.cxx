@@ -25,10 +25,10 @@ extern "C" {
   }
 
 
-  void pm_append_cols (clp_object* matrix, const int numCols, const int * columnStarts,
+  int pm_append_cols (clp_object* matrix, const int numCols, const int * columnStarts,
                         const int * row, const double * element, int numberRows)
   {
-    ((CoinPackedMatrix*)matrix)->appendCols(numCols, columnStarts, row, element, numberRows);
+    return ((CoinPackedMatrix*)matrix)->appendCols(numCols, columnStarts, row, element, numberRows);
   }
 
 

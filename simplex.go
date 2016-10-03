@@ -6,7 +6,6 @@ package clp
 import "C"
 import (
 	"fmt"
-	"runtime"
 	"unsafe"
 	"log"
 )
@@ -28,14 +27,14 @@ func NewSimplex() *Simplex {
 		model:  C.new_simplex_model(),
 		allocs: make([]unsafe.Pointer, 0, 64),
 	}
-	runtime.SetFinalizer(s, func(s *Simplex) {
-		// When we're finished with it, free the model and all the
-		// memory it referred to.
-		C.free_simplex_model(s.model)
-		for _, p := range s.allocs {
-			c_free(p)
-		}
-	})
+	//runtime.SetFinalizer(s, func(s *Simplex) {
+	//	//// When we're finished with it, free the model and all the
+	//	// memory it referred to.
+	//	C.free_simplex_model(s.model)
+	//	for _, p := range s.allocs {
+	//		c_free(p)
+	//	}
+	//})
 	return s
 }
 
@@ -69,7 +68,7 @@ func (pm *Simplex) buildPackedMatrixRepresentation() (columnStarts, rowIndices, 
 		return
 	}
 
-	columnStarts = c_malloc(numCols, C.int(0))
+	columnStarts = c_malloc(numCols+1, C.int(0))
 	rowIndices = c_malloc(pm.totalDataLen, C.int(0))
 	rowElements = c_malloc(pm.totalDataLen, C.double(0.0))
 	pm.allocs = append(pm.allocs, columnStarts)
@@ -102,6 +101,8 @@ func (pm *Simplex) buildPackedMatrixRepresentation() (columnStarts, rowIndices, 
 			dataPosition++
 		}
 	}
+
+	c_SetArrayInt(columnStarts, len(pm.pendingColumns), dataPosition)
 
 
 
