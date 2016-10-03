@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"unsafe"
 	"log"
+	"runtime"
 )
 
 // A Simplex represents solves linear-programming problems using the simplex
@@ -27,14 +28,14 @@ func NewSimplex() *Simplex {
 		model:  C.new_simplex_model(),
 		allocs: make([]unsafe.Pointer, 0, 64),
 	}
-	//runtime.SetFinalizer(s, func(s *Simplex) {
-	//	//// When we're finished with it, free the model and all the
-	//	// memory it referred to.
-	//	C.free_simplex_model(s.model)
-	//	for _, p := range s.allocs {
-	//		c_free(p)
-	//	}
-	//})
+	runtime.SetFinalizer(s, func(s *Simplex) {
+		//// When we're finished with it, free the model and all the
+		// memory it referred to.
+		C.free_simplex_model(s.model)
+		for _, p := range s.allocs {
+			c_free(p)
+		}
+	})
 	return s
 }
 

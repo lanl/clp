@@ -9,6 +9,7 @@ import (
 	"io"
 	"unsafe"
 	"log"
+	"runtime"
 )
 
 // A PackedMatrix is a basic implementation of the Matrix interface.
@@ -26,14 +27,14 @@ func NewPackedMatrix() *PackedMatrix {
 		matrix: C.new_packed_matrix(),
 		allocs: make([]unsafe.Pointer, 0, 64),
 	}
-	//runtime.SetFinalizer(m, func(m *PackedMatrix) {
-	//	// When we're finished with it, free the matrix and all the
-	//	// memory it referred to.
-	//	C.free_packed_matrix(m.matrix)
-	//	for _, p := range m.allocs {
-	//		c_free(p)
-	//	}
-	//})
+	runtime.SetFinalizer(m, func(m *PackedMatrix) {
+		// When we're finished with it, free the matrix and all the
+		// memory it referred to.
+		C.free_packed_matrix(m.matrix)
+		for _, p := range m.allocs {
+			c_free(p)
+		}
+	})
 
 	return m
 }
