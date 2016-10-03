@@ -197,9 +197,10 @@ func (s *Simplex) LoadProblemEfficient(cb []Bounds, obj []float64, rb []Bounds, 
 	var rowUBPtr *C.double
 	var rObjPtr *C.double
 
-	// It's not safe to pass Go-allocated memory to C.  Hence, we use C's
-	// malloc to allocate the memory, which we free in the Simplex
-	// finalizer.  First, we convert cb to two C vectors, colLB and colUB.
+	// It's not safe to pass Go-allocated memory to C, but we're doing it here on purpose for performance reasons.
+	// The downside is that the C program can corrupt your go memory very easily.
+	// The upside is no copying and much less malloc'ing, which leads to far superior performance
+	// in highly parallel scenarios.
 	var colLB, colUB []C.double
 	if cb != nil {
 		colLB = make([]C.double, nc)
