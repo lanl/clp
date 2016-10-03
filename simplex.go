@@ -54,16 +54,10 @@ func (pm *Simplex) BufferColumn(col []Nonzero) {
 //Flushes all buffered columns to the matrix in one go with minimal malloc calls
 func (pm *Simplex) buildPackedMatrixRepresentation() (columnStarts, rowIndices, rowElements unsafe.Pointer, numCols, maxRowLen int){
 
-	log.Println("appending buffered rows")
-
 	//so we need to allocate a few chunks of memory here to fit the
 	//CoinPackedMatrix::appendCols signature
 
 	numCols = len(pm.pendingColumns)
-
-	log.Println(numCols)
-	log.Println(pm.totalDataLen)
-
 
 	if numCols == 0 {
 		return
@@ -104,8 +98,6 @@ func (pm *Simplex) buildPackedMatrixRepresentation() (columnStarts, rowIndices, 
 	}
 
 	c_SetArrayInt(columnStarts, len(pm.pendingColumns), dataPosition)
-
-
 
 	pm.pendingColumns = nil
 	pm.totalDataLen = 0
