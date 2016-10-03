@@ -7,7 +7,6 @@ import "C"
 import (
 	"fmt"
 	"unsafe"
-	"log"
 	"runtime"
 )
 
