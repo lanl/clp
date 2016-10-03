@@ -169,11 +169,11 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 }
 
 
-// LoadProblem loads a problem into a simplex model.  It takes as an argument a
-// matrix (with inequalities in rows and coefficients in columns), the upper
+// LoadProblemEfficient loads a problem into a simplex model.  It takes as an argument
+// the upper
 // and lower column bounds, the coefficients of the column objective function,
 // the upper and lower row bounds, and the coefficients of the row objective
-// function.  Any of these arguments except for the matrix can be nil.  When
+// function.  Any of these arguments can be nil.  When
 // nil, the column bounds default to {0, ∞} for each row; the column and row
 // objective functions default to 0 for all coefficients; and the row bounds
 // default to {−∞, +∞} for each column.
