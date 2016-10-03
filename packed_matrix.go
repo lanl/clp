@@ -83,43 +83,35 @@ func (pm *PackedMatrix) AppendBufferedColumnsBatched() {
 
 	numCols := len(pm.pendingColumns)
 
-
 	if numCols == 0 {
 		return
 	}
 
-
-	columnStarts := c_malloc(numCols+1, C.int(0))
-	rowIndices := c_malloc(pm.totalDataLen, C.int(0))
-	rowElements := c_malloc(pm.totalDataLen, C.double(0.0))
-	pm.allocs = append(pm.allocs, columnStarts)
-	pm.allocs = append(pm.allocs, rowIndices)
-	pm.allocs = append(pm.allocs, rowElements)
+	columnStarts := make([]C.int, numCols+1)
+	rowIndices := make([]C.int, pm.totalDataLen)
+	rowElements := make([]C.double, pm.totalDataLen)
 
 	dataPosition := 0
 
 	for col, colData := range pm.pendingColumns {
-		//columnStarts[col] = C.int(dataPosition)
-		c_SetArrayInt(columnStarts, col, dataPosition)
+		columnStarts[col] = C.int(dataPosition)
 		for _, nz := range colData {
 
-			c_SetArrayInt(rowIndices, dataPosition, nz.Index)
-			c_SetArrayDouble(rowElements, dataPosition, nz.Value)
+			rowIndices[dataPosition] = C.int(nz.Index)
+			rowElements[dataPosition] = C.double(nz.Value)
 
 			dataPosition++
 		}
 	}
 
-	c_SetArrayInt(columnStarts, len(pm.pendingColumns), dataPosition)
-
-
+	columnStarts[numCols] = C.int(dataPosition)
 
 	C.pm_append_cols(
 		pm.matrix,
 		C.int(numCols),
-		(*C.int)(columnStarts),
-		(*C.int)(rowIndices),
-		(*C.double)(rowElements),
+		&columnStarts[0],
+		&rowIndices[0],
+		&rowElements[0],
 		C.int(0),
 	)
 
