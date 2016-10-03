@@ -51,7 +51,7 @@ func (pm *Simplex) BufferColumn(col []Nonzero) {
 }
 
 //Flushes all buffered columns to the matrix in one go with minimal malloc calls
-func (pm *Simplex) buildPackedMatrixRepresentation() (columnStarts, rowIndices, rowElements unsafe.Pointer, numCols, maxRowLen int){
+func (pm *Simplex) buildPackedMatrixRepresentation() (columnStarts, rowIndices []C.int, rowElements []C.double, numCols, maxRowLen int){
 
 	//so we need to allocate a few chunks of memory here to fit the
 	//CoinPackedMatrix::appendCols signature
@@ -62,16 +62,10 @@ func (pm *Simplex) buildPackedMatrixRepresentation() (columnStarts, rowIndices, 
 		return
 	}
 
-	columnStarts = c_malloc(numCols+1, C.int(0))
-	rowIndices = c_malloc(pm.totalDataLen, C.int(0))
-	rowElements = c_malloc(pm.totalDataLen, C.double(0.0))
-	pm.allocs = append(pm.allocs, columnStarts)
-	pm.allocs = append(pm.allocs, rowIndices)
-	pm.allocs = append(pm.allocs, rowElements)
 
-	//columnStarts := make([]C.int, numCols)
-	//rowIndices := make([]C.int, pm.totalDataLen)
-	//rowElements := make([]C.double, pm.totalDataLen)
+	columnStarts = make([]C.int, numCols+1)
+	rowIndices = make([]C.int, pm.totalDataLen)
+	rowElements = make([]C.double, pm.totalDataLen)
 
 	dataPosition := 0
 
@@ -82,21 +76,18 @@ func (pm *Simplex) buildPackedMatrixRepresentation() (columnStarts, rowIndices, 
 		if rLen > maxRowLen {
 			maxRowLen = rLen
 		}
-		//columnStarts[col] = C.int(dataPosition)
-		c_SetArrayInt(columnStarts, col, dataPosition)
+		columnStarts[col] = C.int(dataPosition)
 		for _, nz := range colData {
 
-			c_SetArrayInt(rowIndices, dataPosition, nz.Index)
-			c_SetArrayDouble(rowElements, dataPosition, nz.Value)
 
-			//rowI//ndices[dataPosition] = C.int(nz.Index)
-			//rowElements[dataPosition] = C.double(nz.Value)
+			rowIndices[dataPosition] = C.int(nz.Index)
+			rowElements[dataPosition] = C.double(nz.Value)
 
 			dataPosition++
 		}
 	}
 
-	c_SetArrayInt(columnStarts, len(pm.pendingColumns), dataPosition)
+	columnStarts[numCols] = C.int(dataPosition)
 
 	pm.pendingColumns = nil
 	pm.totalDataLen = 0
@@ -186,30 +177,48 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 // nil, the column bounds default to {0, ∞} for each row; the column and row
 // objective functions default to 0 for all coefficients; and the row bounds
 // default to {−∞, +∞} for each column.
+//
+//Additionally, this version of LoadProblem uses the memory efficient matrix representation
+//rather than a full CoinPackedMatrix built up from columns. This requires far fewer allocations.
+//We also do not use the C malloc to allocate any memory and simply share our own go-allocated
+//memory with CLP. This is extremely dangerous but is the only way to get extreme performance.
+//Caveat Emptor
 func (s *Simplex) LoadProblemEfficient(cb []Bounds, obj []float64, rb []Bounds, rowObj []float64) {
-	// Because of the the way the C++ API works, m can't be an arbitrary
-	// implementation of the Matrix interface.  We therefore check that it
-	// wraps one of the interfaces CLP knows about and abort if not.
-
+	//build our efficient matrix representation from buffered columns
 	colStarts, rowIndices, rowElements, nc, nr := s.buildPackedMatrixRepresentation()
+
+	colStartsPtr := &colStarts[0]
+	rowIndicesPtr := &rowIndices[0]
+	rowElementsPtr := &rowElements[0]
+	var colLBPtr *C.double
+	var colUBPtr *C.double
+	var cObjPtr *C.double
+	var rowLBPtr *C.double
+	var rowUBPtr *C.double
+	var rObjPtr *C.double
 
 	// It's not safe to pass Go-allocated memory to C.  Hence, we use C's
 	// malloc to allocate the memory, which we free in the Simplex
 	// finalizer.  First, we convert cb to two C vectors, colLB and colUB.
 	var colLB, colUB []C.double
 	if cb != nil {
-		colLB := make([]C.double, nc)
-		colUB := make([]C.double, nc)
+		colLB = make([]C.double, nc)
+		colUB = make([]C.double, nc)
+
+		colLBPtr = &colLB[0]
+		colUBPtr = &colUB[0]
+
 		for i, b := range cb {
-			colLB[i] = C.double*(b.Lower)
-			colUB[i] = C.double*(b.Upper)
+			colLB[i] = C.double(b.Lower)
+			colUB[i] = C.double(b.Upper)
 		}
 	}
 
 	// Next, we convert obj to a C vector, cObj.
 	var cObj []C.double
 	if obj != nil {
-		cObj := make([]C.double, nc)
+		cObj = make([]C.double, nc)
+		cObjPtr = &cObj[0]
 		for i, v := range obj {
 			cObj[i] = C.double(v)
 		}
@@ -220,6 +229,9 @@ func (s *Simplex) LoadProblemEfficient(cb []Bounds, obj []float64, rb []Bounds, 
 	if rb != nil {
 		rowLB = make([]C.double, nr)
 		rowUB = make([]C.double, nr)
+
+		rowLBPtr = &rowLB[0]
+		rowLBPtr = &rowUB[0]
 		for i, b := range rb {
 			rowLB[i] = C.double(b.Lower)
 			rowUB[i] = C.double(b.Upper)
@@ -230,15 +242,27 @@ func (s *Simplex) LoadProblemEfficient(cb []Bounds, obj []float64, rb []Bounds, 
 	var rObj []C.double
 	if rowObj != nil {
 		rObj = make([]C.double, nr)
+		rObjPtr = &rObj[0]
 		for i, v := range rowObj {
 			rObj[i] = C.double(v)
 		}
 	}
 
+
+
+
 	// With all of our parameters ready, we can call our C wrapper function.
-	C.simplex_load_problem_raw(s.model, C.int(nc), C.int(nr), (*C.int)(colStarts), (*C.int)(rowIndices), (*C.double)(rowElements),
-		&colLB[0], &colUB[0], (*C.double)(cObj),
-		&rowLB[0], (*C.double)(rowUB), (*C.double)(rObj))
+	C.simplex_load_problem_raw(s.model, C.int(nc), C.int(nr),
+		colStartsPtr,
+		rowIndicesPtr,
+		rowElementsPtr,
+		colLBPtr,
+		colUBPtr,
+		cObjPtr,
+		rowLBPtr,
+		rowUBPtr,
+		rObjPtr,
+	)
 }
 
 // An OptDirection specifies the direction of optimization (maximize, minimize,
