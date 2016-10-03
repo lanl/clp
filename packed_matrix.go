@@ -94,32 +94,36 @@ func (pm *PackedMatrix) AppendBufferedColumnsBatched() {
 		return
 	}
 
-	columnStarts := make([]C.int, numCols)
-	rowIndices := make([]C.int, pm.totalDataLen)
-	rowElements := make([]C.double, pm.totalDataLen)
+	columnStarts := c_malloc(numCols, C.int(0))
+	rowIndices := c_malloc(pm.totalDataLen, C.int(0))
+	rowElements := c_malloc(pm.totalDataLen, C.double(0.0))
+	pm.allocs = append(pm.allocs, columnStarts)
+	pm.allocs = append(pm.allocs, rowIndices)
+	pm.allocs = append(pm.allocs, rowElements)
+
+	//columnStarts := make([]C.int, numCols)
+	//rowIndices := make([]C.int, pm.totalDataLen)
+	//rowElements := make([]C.double, pm.totalDataLen)
 
 	dataPosition := 0
 
 	for col, colData := range pm.pendingColumns {
-		columnStarts[col] = C.int(dataPosition)
+		//columnStarts[col] = C.int(dataPosition)
+		c_SetArrayInt(columnStarts, col, dataPosition)
 		for _, nz := range colData {
-			rowIndices[dataPosition] = C.int(nz.Index)
-			rowElements[dataPosition] = C.double(nz.Value)
+
+			c_SetArrayInt(rowIndices, dataPosition, nz.Index)
+			c_SetArrayDouble(rowElements, dataPosition, nz.Value)
+
+			//rowI//ndices[dataPosition] = C.int(nz.Index)
+			//rowElements[dataPosition] = C.double(nz.Value)
 
 			dataPosition++
-
-
 		}
 	}
 
 
-
-
-	log.Println("s", columnStarts)
-	log.Println("i", rowIndices)
-	log.Println("e", rowElements)
-
-	C.pm_append_cols(pm.matrix, C.int(numCols), &columnStarts[0], &rowIndices[0], &rowElements[0], C.int(pm.totalDataLen))
+	C.pm_append_cols(pm.matrix, C.int(numCols), (*C.int)(columnStarts), (*C.int)(rowIndices), (*C.double)(rowElements), C.int(0))
 
 	pm.pendingColumns = nil
 	pm.totalDataLen = 0

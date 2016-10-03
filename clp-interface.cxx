@@ -87,6 +87,25 @@ extern "C" {
                                       rowlb, rowub, rowObj);
   }
 
+
+  // Load a problem into a ClpSimplex directly without going via a packed matrix.
+  void simplex_load_problem_raw (clp_object* model, const int 	numCols,
+                                                const int 	numRows,
+                                                const int * 	start,
+                                                const int * 	index,
+                                                const double * 	value,
+                                                const double * 	collb,
+                                                const double * 	colub,
+                                                const double * 	obj,
+                                                const double * 	rowlb,
+                                                const double * 	rowub,
+                                                const double * 	rowObjective)
+  {
+    ((ClpSimplex*)model)->loadProblem(numCols, numRows, start, index, value,
+                                      collb, colub, obj,
+                                      rowlb, rowub, rowObjective);
+  }
+
   // Set the optimization direction.
   void simplex_set_opt_dir (clp_object* model, double dir)
   {

@@ -2,12 +2,14 @@ package main
 
 import (
 	"github.com/longshotsyndicate/clp"
-	"log"
 )
 
 func main() {
 
-	n := 5
+	n := 192
+
+	simp := clp.NewSimplex()
+
 
 	//make a nonzero array
 	col := make([]clp.Nonzero, 0)
@@ -15,19 +17,13 @@ func main() {
 		col = append(col, clp.Nonzero{Index: j, Value: float64(j)})
 	}
 
-	pm := clp.NewPackedMatrix()
 
 	for j := 0; j < n; j++ {
-		pm.BufferColumn(col)
+		simp.BufferColumn(col)
 	}
 
-	pm.AppendBufferedColumnsBatched()
 
-
-	simp := clp.NewSimplex()
-
-	log.Println("lol?")
-	simp.LoadProblem(pm, nil, nil, nil, nil)
+	simp.LoadProblemEfficient(nil, nil, nil, nil)
 
 	simp.SetOptimizationDirection(clp.Maximize)
 
