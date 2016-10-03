@@ -196,53 +196,49 @@ func (s *Simplex) LoadProblemEfficient(cb []Bounds, obj []float64, rb []Bounds, 
 	// It's not safe to pass Go-allocated memory to C.  Hence, we use C's
 	// malloc to allocate the memory, which we free in the Simplex
 	// finalizer.  First, we convert cb to two C vectors, colLB and colUB.
-	var colLB, colUB unsafe.Pointer
+	var colLB, colUB []C.double
 	if cb != nil {
-		colLB = c_malloc(nc, C.double(0.0))
-		colUB = c_malloc(nc, C.double(0.0))
+		colLB := make([]C.double, nc)
+		colUB := make([]C.double, nc)
 		for i, b := range cb {
-			c_SetArrayDouble(colLB, i, b.Lower)
-			c_SetArrayDouble(colUB, i, b.Upper)
+			colLB[i] = C.double*(b.Lower)
+			colUB[i] = C.double*(b.Upper)
 		}
-		s.allocs = append(s.allocs, colLB, colUB)
 	}
 
 	// Next, we convert obj to a C vector, cObj.
-	var cObj unsafe.Pointer
+	var cObj []C.double
 	if obj != nil {
-		cObj = c_malloc(nc, C.double(0.0))
+		cObj := make([]C.double, nc)
 		for i, v := range obj {
-			c_SetArrayDouble(cObj, i, v)
+			cObj[i] = C.double(v)
 		}
-		s.allocs = append(s.allocs, cObj)
 	}
 
 	// Then, we convert rb to two C vectors, rowLB and rowUB.
-	var rowLB, rowUB unsafe.Pointer
+	var rowLB, rowUB []C.double
 	if rb != nil {
-		rowLB = c_malloc(nr, C.double(0.0))
-		rowUB = c_malloc(nr, C.double(0.0))
+		rowLB = make([]C.double, nr)
+		rowUB = make([]C.double, nr)
 		for i, b := range rb {
-			c_SetArrayDouble(rowLB, i, b.Lower)
-			c_SetArrayDouble(rowUB, i, b.Upper)
+			rowLB[i] = C.double(b.Lower)
+			rowUB[i] = C.double(b.Upper)
 		}
-		s.allocs = append(s.allocs, rowLB, rowUB)
 	}
 
 	// Finally, we convert rowObj to a C vector, rObj.
-	var rObj unsafe.Pointer
+	var rObj []C.double
 	if rowObj != nil {
-		rObj = c_malloc(nr, C.double(0.0))
+		rObj = make([]C.double, nr)
 		for i, v := range rowObj {
-			c_SetArrayDouble(rObj, i, v)
+			rObj[i] = C.double(v)
 		}
-		s.allocs = append(s.allocs, rObj)
 	}
 
 	// With all of our parameters ready, we can call our C wrapper function.
 	C.simplex_load_problem_raw(s.model, C.int(nc), C.int(nr), (*C.int)(colStarts), (*C.int)(rowIndices), (*C.double)(rowElements),
-		(*C.double)(colLB), (*C.double)(colUB), (*C.double)(cObj),
-		(*C.double)(rowLB), (*C.double)(rowUB), (*C.double)(rObj))
+		&colLB[0], &colUB[0], (*C.double)(cObj),
+		&rowLB[0], (*C.double)(rowUB), (*C.double)(rObj))
 }
 
 // An OptDirection specifies the direction of optimization (maximize, minimize,
