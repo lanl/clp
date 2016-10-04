@@ -50,11 +50,8 @@ func (pm *Simplex) BufferColumn(col []Nonzero) {
 	pm.totalDataLen += len(col)
 }
 
-//Flushes all buffered columns to the matrix in one go with minimal malloc calls
+// Flushes all buffered columns to the compact matrix representation in one go with no c-malloc calls
 func (pm *Simplex) buildPackedMatrixRepresentation() (columnStarts, rowIndices []C.int, rowElements []C.double, numCols, maxRowLen int){
-
-	//so we need to allocate a few chunks of memory here to fit the
-	//CoinPackedMatrix::appendCols signature
 
 	numCols = len(pm.pendingColumns)
 
@@ -62,6 +59,8 @@ func (pm *Simplex) buildPackedMatrixRepresentation() (columnStarts, rowIndices [
 		return
 	}
 
+	//so we need to allocate a few chunks of memory here to fit the
+	//CoinPackedMatrix::appendCols signature
 
 	columnStarts = make([]C.int, numCols+1)
 	rowIndices = make([]C.int, pm.totalDataLen)
@@ -178,11 +177,11 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 // objective functions default to 0 for all coefficients; and the row bounds
 // default to {−∞, +∞} for each column.
 //
-//Additionally, this version of LoadProblem uses the memory efficient matrix representation
-//rather than a full CoinPackedMatrix built up from columns. This requires far fewer allocations.
-//We also do not use the C malloc to allocate any memory and simply share our own go-allocated
-//memory with CLP. This is extremely dangerous but is the only way to get extreme performance.
-//Caveat Emptor
+// Additionally, this version of LoadProblem uses the memory efficient matrix representation
+// rather than a full CoinPackedMatrix built up from columns. This requires far fewer allocations.
+// We also do not use the C malloc to allocate any memory and simply share our own go-allocated
+// memory with CLP. This is extremely dangerous but is the only way to get extreme performance.
+// Caveat Emptor!
 func (s *Simplex) LoadProblemEfficient(cb []Bounds, obj []float64, rb []Bounds, rowObj []float64) {
 	//build our efficient matrix representation from buffered columns
 	colStarts, rowIndices, rowElements, nc, nr := s.buildPackedMatrixRepresentation()
