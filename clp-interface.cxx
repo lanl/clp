@@ -1,4 +1,5 @@
 #include <coin/ClpSimplex.hpp>
+#include <coin/CoinFinite.hpp>
 #include "clp-interface.h"
 
 extern "C" {
@@ -21,6 +22,20 @@ extern "C" {
                       const int* vecind, const double* vecelem)
   {
     ((CoinPackedMatrix*)matrix)->appendCol(vecsize, vecind, vecelem);
+  }
+
+
+  int pm_append_cols (clp_object* matrix, const int numCols, const int * columnStarts,
+                        const int * row, const double * element, int numberRows)
+  {
+    return ((CoinPackedMatrix*)matrix)->appendCols(numCols, columnStarts, row, element, numberRows);
+  }
+
+
+  // Append a (sparse) column to a CoinPackedMatrix.
+  void reserve_packed_matrix (clp_object* matrix, int newMaxMajorDim, int newMaxSize, int create)
+  {
+    ((CoinPackedMatrix*)matrix)->reserve(newMaxMajorDim, newMaxSize, create == 1);
   }
 
   // Retrieve a CoinPackedMatrix's rows and columns.
@@ -70,6 +85,25 @@ extern "C" {
     ((ClpSimplex*)model)->loadProblem(*(CoinPackedMatrix*)matrix,
                                       collb, colub, obj,
                                       rowlb, rowub, rowObj);
+  }
+
+
+  // Load a problem into a ClpSimplex directly without going via a packed matrix.
+  void simplex_load_problem_raw (clp_object* model, const int 	numCols,
+                                                const int 	numRows,
+                                                const int * 	start,
+                                                const int * 	index,
+                                                const double * 	value,
+                                                const double * 	collb,
+                                                const double * 	colub,
+                                                const double * 	obj,
+                                                const double * 	rowlb,
+                                                const double * 	rowub,
+                                                const double * 	rowObjective)
+  {
+    ((ClpSimplex*)model)->loadProblem(numCols, numRows, start, index, value,
+                                      collb, colub, obj,
+                                      rowlb, rowub, rowObjective);
   }
 
   // Set the optimization direction.
