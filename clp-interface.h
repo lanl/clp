@@ -13,12 +13,12 @@ extern "C" {
   extern void free_packed_matrix (clp_object* matrix);
   extern void pm_append_col (clp_object* matrix, const int vecsize,
                              const int* vecind, const double* vecelem);
-  extern int pm_append_cols (  clp_object* matrix,
-                                const int numCols,
-                                const int * columnStarts,
-                                const int * row,
-                                const double * element,
-                                int numberRows);
+  extern int pm_append_cols (clp_object* matrix,
+                             const int numCols,
+                             const int* columnStarts,
+                             const int* row,
+                             const double* element,
+                             int numberRows);
   extern void pm_get_dims (clp_object* matrix, int* nrows, int* ncols);
   extern void pm_get_sparse_data (clp_object* matrix, const int** starts,
                                   const int** lengths, const int** indices,
@@ -32,17 +32,18 @@ extern "C" {
                                     const double* rowlb, const double* rowub,
                                     const double* rowObj);
 
-    extern void simplex_load_problem_raw (clp_object* model, const int 	numcols,
-                                    const int 	numrows,
-                                    const int * 	start,
-                                    const int * 	index,
-                                    const double * 	value,
-                                    const double * 	collb,
-                                    const double * 	colub,
-                                    const double * 	obj,
-                                    const double * 	rowlb,
-                                    const double * 	rowub,
-                                    const double * 	rowObjective);
+  extern void simplex_load_problem_raw (clp_object*   model,
+                                        const int     numcols,
+                                        const int     numrows,
+                                        const int*    start,
+                                        const int*    index,
+                                        const double* value,
+                                        const double* collb,
+                                        const double* colub,
+                                        const double* obj,
+                                        const double* rowlb,
+                                        const double* rowub,
+                                        const double* rowObjective);
 
   extern void simplex_set_opt_dir (clp_object* model, double dir);
   extern int simplex_primal (clp_object* model, int vp, int sfo);

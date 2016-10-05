@@ -7,9 +7,9 @@ import "C"
 import (
 	"fmt"
 	"io"
-	"unsafe"
 	"log"
 	"runtime"
+	"unsafe"
 )
 
 // A PackedMatrix is a basic implementation of the Matrix interface.
@@ -17,8 +17,8 @@ type PackedMatrix struct {
 	matrix *C.clp_object    // Pointer to a CoinPackedMatrix
 	allocs []unsafe.Pointer // Row/column data to which the CoinPackedMatrix points
 
-	pendingColumns [][]Nonzero
-	totalDataLen int
+	pendingColumns [][]Nonzero // Columns pending addition to the PackedMatrix
+	totalDataLen   int         // Total number of nonzero elements pending addition to the PackedMatrix
 }
 
 // NewPackedMatrix allocates a new, empty, packed matrix.
@@ -62,27 +62,23 @@ func (pm *PackedMatrix) AppendColumn(col []Nonzero) {
 	C.pm_append_col(pm.matrix, C.int(nElts), (*C.int)(rows), (*C.double)(vals))
 }
 
-
-
-
-// AppendColumn appends a sparse column to a packed matrix.  The column is
-// specified as a slice of {row number, value} pairs.
-// Additionally, we do not call into cgo at this point or incur any malloc hits
-// As this trashes multicore performance. Once all columns are buffered, we can call a final
-// AppendBufferedColumnsBatched() to flush all waiting columns to the matrix for solving
+// Like AppendColumn, BufferColumn appends a sparse column, specified as a
+// slice of {row number, value} pairs, to a packed matrix.  The difference is
+// that the code does not call into cgo at this point or incur any malloc hits
+// as this trashes multicore performance. Once all columns are buffered, the
+// program should invoke AppendBufferedColumnsBatched to flush all pending
+// columns to the matrix for solving.
 func (pm *PackedMatrix) BufferColumn(col []Nonzero) {
 	pm.pendingColumns = append(pm.pendingColumns, col)
 	pm.totalDataLen += len(col)
 }
 
-
-//Flushes all buffered columns to the matrix in one go with minimal malloc calls
+// AppendBufferedColumnsBatched flushes all buffered columns to the matrix in
+// one go with minimal malloc calls.
 func (pm *PackedMatrix) AppendBufferedColumnsBatched() {
-	//so we need to allocate a few chunks of memory here to fit the
-	//CoinPackedMatrix::appendCols signature
-
+	// We need to allocate a few chunks of memory here to fit the
+	// CoinPackedMatrix::appendCols signature.
 	numCols := len(pm.pendingColumns)
-
 	if numCols == 0 {
 		return
 	}
@@ -119,11 +115,12 @@ func (pm *PackedMatrix) AppendBufferedColumnsBatched() {
 	pm.totalDataLen = 0
 }
 
+// Reserve reserves sufficient space in a PackedMatrix for appending
+// a given number of additional columns.
 func (pm *PackedMatrix) Reserve(cols int, maxSize int, create int) {
-	//  extern void reserve_packed_matrix (clp_object* model, int newMaxMajorDim, int newMaxSize, int create);
+	// extern void reserve_packed_matrix (clp_object* model, int newMaxMajorDim, int newMaxSize, int create);
 	C.reserve_packed_matrix(pm.matrix, C.int(cols), C.int(maxSize), C.int(create))
 }
-
 
 // AppendColumn appends a sparse column to a packed matrix.  The column is
 // specified as a slice of {row number, value} pairs.
@@ -160,7 +157,7 @@ func (pm *PackedMatrix) SparseData() (starts, lengths, indices []int, elements [
 	starts = make([]int, 0)
 	lengths = make([]int, 0)
 	log.Println("nc", nc)
-	for i := 0; i < nc ; i++ {
+	for i := 0; i < nc; i++ {
 		starts = append(starts, c_GetArrayInt(unsafe.Pointer(cstarts), i))
 		lengths = append(lengths, c_GetArrayInt(unsafe.Pointer(clens), i))
 	}
