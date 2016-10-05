@@ -182,8 +182,8 @@ func (s *Simplex) Barrier(xover bool) SimplexStatus {
 	return SimplexStatus(C.simplex_barrier(s.model, b))
 }
 
-// PrimalTolerance returns the tolerance currently associated with variables in
-// a simplex model.
+// PrimalTolerance returns the tolerance currently associated with the
+// variables in a simplex model.
 func (s *Simplex) PrimalTolerance() float64 {
 	var tolerance C.double
 	tolerance = C.simplex_primal_get_tolerance(s.model)
