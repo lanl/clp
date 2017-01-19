@@ -5,7 +5,7 @@ package clp_test
 
 import (
 	"bytes"
-	"github.com/losalamos/clp"
+	"github.com/lanl/clp"
 	"testing"
 )
 

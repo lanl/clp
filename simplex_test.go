@@ -5,7 +5,7 @@ package clp_test
 
 import (
 	"fmt"
-	"github.com/losalamos/clp"
+	"github.com/lanl/clp"
 	"math"
 	"testing"
 )
