@@ -1,6 +1,3 @@
-// Copyright © 2015, Los Alamos National Security, LLC
-// All rights reserved.
-
 /*
 Package clp provides an interface to the COIN-OR Linear Programming (CLP)
 library.  As the name implies, CLP is a solver for linear-programming problems:

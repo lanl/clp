@@ -1,6 +1,8 @@
 clp
 ===
 
+[![GoDoc](https://godoc.org/github.com/lanl/clp?status.svg)](https://godoc.org/github.com/lanl/clp) [![Go Report Card](https://goreportcard.com/badge/github.com/lanl/clp)](https://goreportcard.com/report/github.com/lanl/clp)
+
 Description
 -----------
 
