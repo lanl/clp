@@ -10,6 +10,14 @@ extern "C" {
     return (clp_object*)matrix;
   }
 
+  void reserve (clp_object* matrix,
+		int newMaxMajorDim,
+		int newMaxSize,
+		int create)
+  {
+    ((CoinPackedMatrix*)matrix)->reserve(newMaxMajorDim, (CoinBigIndex)newMaxSize, bool(create));
+  }
+
   // Free an existing CoinPackedMatrix.
   void free_packed_matrix (clp_object* matrix)
   {
