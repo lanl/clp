@@ -40,6 +40,11 @@ extern "C" {
   extern void simplex_primal_set_tolerance(clp_object* model, double tolerance);
   extern double simplex_primal_get_tolerance(clp_object* model);
 
+  extern void set_max_iterations(clp_object* model, int max_iter);
+  extern int max_iterations(clp_object* model);
+  extern void set_max_seconds(clp_object* model, double max_seconds);
+  extern double max_seconds(clp_object* model);
+
 #ifdef __cplusplus
 }
 #endif

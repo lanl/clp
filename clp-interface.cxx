@@ -154,4 +154,25 @@ extern "C" {
   {
     return ((ClpSimplex*)model)->objectiveValue();
   }
+
+  void set_max_iterations(clp_object* model, int max_iter)
+  {
+    ((ClpModel*)model)->setMaximumIterations(max_iter);
+  }
+
+  int max_iterations(clp_object* model)
+  {
+    return ((ClpModel*)model)->maximumIterations();
+  }
+
+  void set_max_seconds(clp_object* model, double max_seconds)
+  {
+    ((ClpModel*)model)->setMaximumSeconds(max_seconds);
+  }
+
+  double max_seconds(clp_object* model)
+  {
+    return ((ClpModel*)model)->maximumSeconds();
+  }
+
 }
