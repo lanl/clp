@@ -15,6 +15,28 @@ func TestCreateSimplex(t *testing.T) {
 	_ = clp.NewSimplex()
 }
 
+// Test if we can set solve iteration limit.
+func TestSimplexSetIters(t *testing.T) {
+	s := clp.NewSimplex()
+	maxIter := 10
+	s.SetMaxIterations(maxIter)
+	maxIterBack := s.GetMaxIterations()
+	if maxIter != maxIterBack {
+		t.Fatal("Cannot set max iterations")
+	}
+}
+
+// Test if we can set solve time limit.
+func TestSimplexSetSeconds(t *testing.T) {
+	s := clp.NewSimplex()
+	maxSeconds := 12.1
+	s.SetMaxSeconds(maxSeconds)
+	maxSecondsBack := s.GetMaxSeconds()
+	if !closeTo(maxSeconds, maxSecondsBack, 0.05) {
+		t.Fatal("Cannot set max seconds")
+	}
+}
+
 // Test if we can load a problem into a simplex model.
 func TestLoadProblem(t *testing.T) {
 	s := clp.NewSimplex()

@@ -130,6 +130,22 @@ func (s *Simplex) SetOptimizationDirection(d OptDirection) {
 	C.simplex_set_opt_dir(s.model, C.double(d))
 }
 
+// Set max iterations for a solve
+func (s *Simplex) SetMaxIterations(maxIter int) {
+	C.set_max_iterations(s.model, C.int(maxIter))
+}
+func (s *Simplex) GetMaxIterations() int {
+	return int(C.max_iterations(s.model))
+}
+
+// Set max seconds for a solve
+func (s *Simplex) SetMaxSeconds(maxSeconds float64) {
+	C.set_max_seconds(s.model, C.double(maxSeconds))
+}
+func (s *Simplex) GetMaxSeconds() float64 {
+	return float64(C.max_seconds(s.model))
+}
+
 // A ValuesPass specifies whether to perform a values pass.
 type ValuesPass int
 
