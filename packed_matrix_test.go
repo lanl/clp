@@ -14,6 +14,12 @@ func TestCreateMatrix(t *testing.T) {
 	_ = clp.NewPackedMatrix()
 }
 
+// Test if we can reserve space in a packed matrix.
+func TestReserve(t *testing.T) {
+	m := clp.NewPackedMatrix()
+	m.Reserve(100, 100, false)
+}
+
 // Append a given number of columns to a (presumably empty) matrix to produce
 // an NRxNC sparse matrix with nonzeroes only on the major and minor diagonals.
 func addColumns(m *clp.PackedMatrix, nr, nc int) {
