@@ -28,12 +28,14 @@ func NewPackedMatrix() *PackedMatrix {
 		// memory it referred to.
 		C.free_packed_matrix(m.matrix)
 		for _, p := range m.allocs {
-			c_free(p)
+			cFree(p)
 		}
 	})
 	return m
 }
 
+// Reserve reserves sufficient space in a packed matrix for appending
+// major-ordered vectors.
 func (pm *PackedMatrix) Reserve(newMaxMajorDim int, newMaxSize int, create bool) {
 	var b C.int
 	if create {
@@ -49,16 +51,16 @@ func (pm *PackedMatrix) AppendColumn(col []Nonzero) {
 	// malloc to allocate the memory, which we free in the PackedMatrix
 	// finalizer.
 	nElts := len(col)
-	rows := c_malloc(nElts, C.int(0))
+	rows := cMalloc(nElts, C.int(0))
 	pm.allocs = append(pm.allocs, rows)
-	vals := c_malloc(nElts, C.double(0.0))
+	vals := cMalloc(nElts, C.double(0.0))
 	pm.allocs = append(pm.allocs, vals)
 
 	// Convert from the given array of two-element structs to two flat
 	// vectors, and replace Go datatypes with C datatypes.
 	for i, c := range col {
-		c_SetArrayInt(rows, i, c.Index)
-		c_SetArrayDouble(vals, i, c.Value)
+		cSetArrayInt(rows, i, c.Index)
+		cSetArrayDouble(vals, i, c.Value)
 	}
 
 	// Tell our C wrapper function to append the column.
@@ -92,15 +94,15 @@ func (pm *PackedMatrix) SparseData() (starts, lengths, indices []int, elements [
 	starts = make([]int, nc)
 	lengths = make([]int, nc)
 	for i := range starts {
-		starts[i] = c_GetArrayInt(unsafe.Pointer(cstarts), i)
-		lengths[i] = c_GetArrayInt(unsafe.Pointer(clens), i)
+		starts[i] = cGetArrayInt(unsafe.Pointer(cstarts), i)
+		lengths[i] = cGetArrayInt(unsafe.Pointer(clens), i)
 	}
 	indices = make([]int, 0, nc)
 	elements = make([]float64, 0, nc)
 	for i := 0; i < nc; i++ {
 		for j := starts[i]; j < starts[i]+lengths[i]; j++ {
-			indices = append(indices, c_GetArrayInt(unsafe.Pointer(cidxs), j))
-			elements = append(elements, c_GetArrayDouble(unsafe.Pointer(celts), j))
+			indices = append(indices, cGetArrayInt(unsafe.Pointer(cidxs), j))
+			elements = append(elements, cGetArrayDouble(unsafe.Pointer(celts), j))
 		}
 	}
 	return
