@@ -34,6 +34,14 @@ func NewPackedMatrix() *PackedMatrix {
 	return m
 }
 
+func (pm *PackedMatrix) Reserve(newMaxMajorDim int, newMaxSize int, create bool) {
+	var b C.int
+	if create {
+		b = 1
+	}
+	C.reserve(pm.matrix, C.int(newMaxMajorDim), C.int(newMaxSize), b)
+}
+
 // AppendColumn appends a sparse column to a packed matrix.  The column is
 // specified as a slice of {row number, value} pairs.
 func (pm *PackedMatrix) AppendColumn(col []Nonzero) {
