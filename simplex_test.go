@@ -20,7 +20,7 @@ func TestSimplexSetIters(t *testing.T) {
 	s := clp.NewSimplex()
 	maxIter := 10
 	s.SetMaxIterations(maxIter)
-	maxIterBack := s.GetMaxIterations()
+	maxIterBack := s.MaxIterations()
 	if maxIter != maxIterBack {
 		t.Fatal("Cannot set max iterations")
 	}
@@ -31,7 +31,7 @@ func TestSimplexSetSeconds(t *testing.T) {
 	s := clp.NewSimplex()
 	maxSeconds := 12.1
 	s.SetMaxSeconds(maxSeconds)
-	maxSecondsBack := s.GetMaxSeconds()
+	maxSecondsBack := s.MaxSeconds()
 	if !closeTo(maxSeconds, maxSecondsBack, 0.05) {
 		t.Fatal("Cannot set max seconds")
 	}

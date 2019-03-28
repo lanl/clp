@@ -135,8 +135,8 @@ func (s *Simplex) SetMaxIterations(maxIter int) {
 	C.set_max_iterations(s.model, C.int(maxIter))
 }
 
-// GetMaxIterations returns the maximum number of iterations for a solve.
-func (s *Simplex) GetMaxIterations() int {
+// MaxIterations returns the maximum number of iterations for a solve.
+func (s *Simplex) MaxIterations() int {
 	return int(C.max_iterations(s.model))
 }
 
@@ -145,8 +145,8 @@ func (s *Simplex) SetMaxSeconds(maxSeconds float64) {
 	C.set_max_seconds(s.model, C.double(maxSeconds))
 }
 
-// GetMaxSeconds returns the maximum number of seconds for a solve.
-func (s *Simplex) GetMaxSeconds() float64 {
+// MaxSeconds returns the maximum number of seconds for a solve.
+func (s *Simplex) MaxSeconds() float64 {
 	return float64(C.max_seconds(s.model))
 }
 
