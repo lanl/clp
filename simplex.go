@@ -28,7 +28,7 @@ func NewSimplex() *Simplex {
 		// memory it referred to.
 		C.free_simplex_model(s.model)
 		for _, p := range s.allocs {
-			c_free(p)
+			cFree(p)
 		}
 	})
 	return s
@@ -65,11 +65,11 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 	// finalizer.  First, we convert cb to two C vectors, colLB and colUB.
 	var colLB, colUB unsafe.Pointer
 	if cb != nil {
-		colLB = c_malloc(nc, C.double(0.0))
-		colUB = c_malloc(nc, C.double(0.0))
+		colLB = cMalloc(nc, C.double(0.0))
+		colUB = cMalloc(nc, C.double(0.0))
 		for i, b := range cb {
-			c_SetArrayDouble(colLB, i, b.Lower)
-			c_SetArrayDouble(colUB, i, b.Upper)
+			cSetArrayDouble(colLB, i, b.Lower)
+			cSetArrayDouble(colUB, i, b.Upper)
 		}
 		s.allocs = append(s.allocs, colLB, colUB)
 	}
@@ -77,9 +77,9 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 	// Next, we convert obj to a C vector, cObj.
 	var cObj unsafe.Pointer
 	if obj != nil {
-		cObj = c_malloc(nc, C.double(0.0))
+		cObj = cMalloc(nc, C.double(0.0))
 		for i, v := range obj {
-			c_SetArrayDouble(cObj, i, v)
+			cSetArrayDouble(cObj, i, v)
 		}
 		s.allocs = append(s.allocs, cObj)
 	}
@@ -87,11 +87,11 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 	// Then, we convert rb to two C vectors, rowLB and rowUB.
 	var rowLB, rowUB unsafe.Pointer
 	if rb != nil {
-		rowLB = c_malloc(nr, C.double(0.0))
-		rowUB = c_malloc(nr, C.double(0.0))
+		rowLB = cMalloc(nr, C.double(0.0))
+		rowUB = cMalloc(nr, C.double(0.0))
 		for i, b := range rb {
-			c_SetArrayDouble(rowLB, i, b.Lower)
-			c_SetArrayDouble(rowUB, i, b.Upper)
+			cSetArrayDouble(rowLB, i, b.Lower)
+			cSetArrayDouble(rowUB, i, b.Upper)
 		}
 		s.allocs = append(s.allocs, rowLB, rowUB)
 	}
@@ -99,9 +99,9 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 	// Finally, we convert rowObj to a C vector, rObj.
 	var rObj unsafe.Pointer
 	if rowObj != nil {
-		rObj = c_malloc(nr, C.double(0.0))
+		rObj = cMalloc(nr, C.double(0.0))
 		for i, v := range rowObj {
-			c_SetArrayDouble(rObj, i, v)
+			cSetArrayDouble(rObj, i, v)
 		}
 		s.allocs = append(s.allocs, rObj)
 	}
@@ -130,18 +130,22 @@ func (s *Simplex) SetOptimizationDirection(d OptDirection) {
 	C.simplex_set_opt_dir(s.model, C.double(d))
 }
 
-// Set max iterations for a solve
+// SetMaxIterations sets the maximum number of iterations for a solve.
 func (s *Simplex) SetMaxIterations(maxIter int) {
 	C.set_max_iterations(s.model, C.int(maxIter))
 }
+
+// GetMaxIterations returns the maximum number of iterations for a solve.
 func (s *Simplex) GetMaxIterations() int {
 	return int(C.max_iterations(s.model))
 }
 
-// Set max seconds for a solve
+// SetMaxSeconds sets the maximum number of seconds for a solve.
 func (s *Simplex) SetMaxSeconds(maxSeconds float64) {
 	C.set_max_seconds(s.model, C.double(maxSeconds))
 }
+
+// GetMaxSeconds returns the maximum number of seconds for a solve.
 func (s *Simplex) GetMaxSeconds() float64 {
 	return float64(C.max_seconds(s.model))
 }
@@ -257,7 +261,7 @@ func (s *Simplex) PrimalColumnSolution() []float64 {
 	soln := make([]float64, nc)
 	cSoln := C.simplex_get_prim_col_soln(s.model)
 	for i := range soln {
-		soln[i] = c_GetArrayDouble(unsafe.Pointer(cSoln), i)
+		soln[i] = cGetArrayDouble(unsafe.Pointer(cSoln), i)
 	}
 	return soln
 }
@@ -268,7 +272,7 @@ func (s *Simplex) DualColumnSolution() []float64 {
 	soln := make([]float64, nc)
 	cSoln := C.simplex_get_dual_col_soln(s.model)
 	for i := range soln {
-		soln[i] = c_GetArrayDouble(unsafe.Pointer(cSoln), i)
+		soln[i] = cGetArrayDouble(unsafe.Pointer(cSoln), i)
 	}
 	return soln
 }
@@ -279,7 +283,7 @@ func (s *Simplex) PrimalRowSolution() []float64 {
 	soln := make([]float64, nc)
 	cSoln := C.simplex_get_prim_row_soln(s.model)
 	for i := range soln {
-		soln[i] = c_GetArrayDouble(unsafe.Pointer(cSoln), i)
+		soln[i] = cGetArrayDouble(unsafe.Pointer(cSoln), i)
 	}
 	return soln
 }
@@ -290,7 +294,7 @@ func (s *Simplex) DualRowSolution() []float64 {
 	soln := make([]float64, nc)
 	cSoln := C.simplex_get_dual_row_soln(s.model)
 	for i := range soln {
-		soln[i] = c_GetArrayDouble(unsafe.Pointer(cSoln), i)
+		soln[i] = cGetArrayDouble(unsafe.Pointer(cSoln), i)
 	}
 	return soln
 }
