@@ -45,6 +45,9 @@ extern "C" {
   extern int max_iterations(clp_object* model);
   extern void set_max_seconds(clp_object* model, double max_seconds);
   extern double max_seconds(clp_object* model);
+  extern int secondary_status(clp_object* model);
+
+  extern int write_mps(clp_object* model, const char * filename);
 
 #ifdef __cplusplus
 }

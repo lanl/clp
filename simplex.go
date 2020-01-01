@@ -3,6 +3,7 @@
 package clp
 
 // #include "clp-interface.h"
+// #include "stdlib.h"
 import "C"
 import (
 	"fmt"
@@ -150,6 +151,18 @@ func (s *Simplex) MaxSeconds() float64 {
 	return float64(C.max_seconds(s.model))
 }
 
+// SecondaryStatus returns the secondary status of a model.
+func (s *Simplex) SecondaryStatus() SimplexStatus {
+	return SimplexStatus(C.secondary_status(s.model))
+}
+
+// WriteMPS writes this model to the named MPS file
+func (s *Simplex) WriteMPS(filename string) SimplexStatus {
+	cFilename := C.CString(filename)
+	defer C.free(unsafe.Pointer(cFilename))
+	return SimplexStatus(C.write_mps(s.model, cFilename))
+}
+
 // A ValuesPass specifies whether to perform a values pass.
 type ValuesPass int
 
@@ -180,6 +193,21 @@ const (
 	Optimal    SimplexStatus = 0
 	Infeasible               = 1
 	Unbounded                = 2
+)
+
+// These constants are the corresponding values for the secondary status
+const (
+	SecondaryNone                                  SimplexStatus = 0
+	SecondaryPrimalInfeasible                                    = 1
+	SecondaryScaledOptimalUnscaledPrimalInfeasible               = 2
+	SecondaryScaledOptimalUnscaledDualInfeasible                 = 3
+	SecondaryScaledOptimalUnscaledBothInfeasible                 = 4
+	SecondaryGaveUp                                              = 5
+	SecondaryFailedEmptyCheck                                    = 6
+	SecondaryPostSolveNotOptimal                                 = 7
+	SecondaryFailedBadElement                                    = 8
+	SecondaryStoppedOnTime                                       = 9
+	SecondaryStoppedPrimalInfeasible                             = 10
 )
 
 // Primal solves a simplex model with the primal method.
