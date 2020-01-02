@@ -226,7 +226,7 @@ func TestEasyManyIneqs(t *testing.T) {
 		t.Fatalf("Expected 100 but observed %.10g", v)
 	}
 	secStatus := simp.SecondaryStatus()
-	if secStatus != 0 {
+	if secStatus != clp.SecondaryNone {
 		t.Fatalf("Expected 0 secondary status but got %d", secStatus)
 	}
 }
