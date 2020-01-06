@@ -37,16 +37,13 @@ extern "C" {
   extern double* simplex_get_prim_row_soln (clp_object* model);
   extern double* simplex_get_dual_row_soln (clp_object* model);
   extern double simplex_obj_val (clp_object* model);
-
   extern void simplex_primal_set_tolerance(clp_object* model, double tolerance);
   extern double simplex_primal_get_tolerance(clp_object* model);
-
   extern void set_max_iterations(clp_object* model, int max_iter);
   extern int max_iterations(clp_object* model);
   extern void set_max_seconds(clp_object* model, double max_seconds);
   extern double max_seconds(clp_object* model);
   extern int secondary_status(clp_object* model);
-
   extern int write_mps(clp_object* model, const char * filename);
 
 #ifdef __cplusplus

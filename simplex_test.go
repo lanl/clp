@@ -34,7 +34,7 @@ func TestSimplexSetSeconds(t *testing.T) {
 	s.SetMaxSeconds(maxSeconds)
 	maxSecondsBack := s.MaxSeconds()
 	if !closeTo(maxSeconds, maxSecondsBack, 0.05) {
-		t.Fatal("Cannot set max seconds")
+		t.Fatalf("Cannot set max seconds (wanted %v but saw %v", maxSeconds, maxSecondsBack)
 	}
 }
 
@@ -86,7 +86,7 @@ func TestPrimalSolve(t *testing.T) {
 	}
 	secStatus := simp.SecondaryStatus()
 	if secStatus != clp.SecondaryNone {
-		t.Fatalf("Expected 0 secondary status but got %d", secStatus)
+		t.Fatalf("Expected %d secondary status but got %d", clp.SecondaryNone, secStatus)
 	}
 }
 
@@ -119,7 +119,7 @@ func TestEasyPrimalSolve(t *testing.T) {
 	}
 	secStatus := simp.SecondaryStatus()
 	if secStatus != clp.SecondaryNone {
-		t.Fatalf("Expected 0 secondary status but got %d", secStatus)
+		t.Fatalf("Expected %d secondary status but got %d", clp.SecondaryNone, secStatus)
 	}
 }
 
@@ -227,6 +227,6 @@ func TestEasyManyIneqs(t *testing.T) {
 	}
 	secStatus := simp.SecondaryStatus()
 	if secStatus != clp.SecondaryNone {
-		t.Fatalf("Expected 0 secondary status but got %d", secStatus)
+		t.Fatalf("Expected %d secondary status but got %d", clp.SecondaryNone, secStatus)
 	}
 }
