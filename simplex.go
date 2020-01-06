@@ -156,11 +156,12 @@ func (s *Simplex) SecondaryStatus() SimplexStatus {
 	return SimplexStatus(C.secondary_status(s.model))
 }
 
-// WriteMPS writes this model to the named MPS file
-func (s *Simplex) WriteMPS(filename string) SimplexStatus {
+// WriteMPS writes the model to the named MPS file.  It returns true on success
+// and false on failure.
+func (s *Simplex) WriteMPS(filename string) bool {
 	cFilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cFilename))
-	return SimplexStatus(C.write_mps(s.model, cFilename))
+	return C.write_mps(s.model, cFilename) == 0
 }
 
 // A ValuesPass specifies whether to perform a values pass.

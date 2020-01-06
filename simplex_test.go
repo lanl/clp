@@ -265,5 +265,7 @@ func TestWriteMPS(t *testing.T) {
 	mpsName := mps.Name()
 	mps.Close()
 	defer os.Remove(mpsName)
-	simp.WriteMPS(mpsName)
+	if !simp.WriteMPS(mpsName) {
+		t.Fatalf("Failed to write a simplex model to %s", mpsName)
+	}
 }
