@@ -5,9 +5,10 @@ package clp_test
 
 import (
 	"fmt"
-	"github.com/lanl/clp"
 	"math"
 	"testing"
+
+	"github.com/lanl/clp"
 )
 
 // Test if we can create a simplex model.
@@ -83,6 +84,10 @@ func TestPrimalSolve(t *testing.T) {
 	if !closeTo(v, 6.25, 0.005) {
 		t.Fatalf("Expected 6.25 but observed %.10g", v)
 	}
+	secStatus := simp.SecondaryStatus()
+	if secStatus != clp.SecondaryNone {
+		t.Fatalf("Expected 0 secondary status but got %d", secStatus)
+	}
 }
 
 // Test if we can solve the same problem as above but with the "easy" interface.
@@ -111,6 +116,10 @@ func TestEasyPrimalSolve(t *testing.T) {
 	}
 	if !closeTo(v, 6.25, 0.005) {
 		t.Fatalf("Expected 6.25 but observed %.10g", v)
+	}
+	secStatus := simp.SecondaryStatus()
+	if secStatus != clp.SecondaryNone {
+		t.Fatalf("Expected 0 secondary status but got %d", secStatus)
 	}
 }
 
@@ -215,5 +224,9 @@ func TestEasyManyIneqs(t *testing.T) {
 	}
 	if !closeTo(v, 100, 0.5) {
 		t.Fatalf("Expected 100 but observed %.10g", v)
+	}
+	secStatus := simp.SecondaryStatus()
+	if secStatus != clp.SecondaryNone {
+		t.Fatalf("Expected 0 secondary status but got %d", secStatus)
 	}
 }

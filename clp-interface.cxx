@@ -183,4 +183,14 @@ extern "C" {
     return ((ClpModel*)model)->maximumSeconds();
   }
 
+  int secondary_status(clp_object* model)
+  {
+    return ((ClpModel*)model)->secondaryStatus();
+  }
+
+  int write_mps(clp_object* model, const char * filename)
+  {
+    return ((ClpModel*)model)->writeMps(filename);
+  }
+
 }
