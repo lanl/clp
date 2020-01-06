@@ -5,7 +5,9 @@ package clp_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math"
+	"os"
 	"testing"
 
 	"github.com/lanl/clp"
@@ -229,4 +231,39 @@ func TestEasyManyIneqs(t *testing.T) {
 	if secStatus != clp.SecondaryNone {
 		t.Fatalf("Expected %d secondary status but got %d", clp.SecondaryNone, secStatus)
 	}
+}
+
+// Test if we can write an optimization problem to an MPS file.
+func TestWriteMPS(t *testing.T) {
+	// Set up the following problem: Minimize a + 2b subject to {4 ≤ a + b
+	// ≤ 9, -5 ≤ 3a − b ≤ 3}.
+	mat := clp.NewPackedMatrix()
+	mat.AppendColumn([]clp.Nonzero{
+		{Index: 0, Value: 1.0}, // a
+		{Index: 1, Value: 3.0}, // 3a
+	})
+	mat.AppendColumn([]clp.Nonzero{
+		{Index: 0, Value: 1.0},  // b
+		{Index: 1, Value: -1.0}, // -b
+	})
+	rb := []clp.Bounds{
+		{Lower: 4, Upper: 9},  // [4, 9]
+		{Lower: -5, Upper: 3}, // [-5, 3]
+	}
+	obj := []float64{1.0, 2.0} // a + 2b
+	simp := clp.NewSimplex()
+	simp.LoadProblem(mat, nil, obj, rb, nil)
+	simp.SetOptimizationDirection(clp.Minimize)
+
+	// Write it to a file.  We don't verify the contents because these
+	// could potentially change, even in non-meaningful ways (e.g.,
+	// spacing), across versions of the CLP library.
+	mps, err := ioutil.TempFile("", "clp-*.mps")
+	if err != nil {
+		t.Fatalf("Failed to create a temporary MPS file (%v)", err)
+	}
+	mpsName := mps.Name()
+	mps.Close()
+	defer os.Remove(mpsName)
+	simp.WriteMPS(mpsName)
 }
