@@ -1,4 +1,4 @@
-#include <coin/ClpSimplex.hpp>
+#include <ClpSimplex.hpp>
 #include "clp-interface.h"
 
 extern "C" {
