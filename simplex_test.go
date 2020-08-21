@@ -97,8 +97,8 @@ func TestZeroSolve(t *testing.T) {
 	mat.AppendColumn([]clp.Nonzero{
 		{Index: 0, Value: 1.0},
 	})
-	// force a second all-0 row into the matrix
-   mat.SetDimensions(2,1)
+	// Force a second all-0 row into the matrix.
+	mat.SetDimensions(2, 1)
 	rb := []clp.Bounds{
 		{Lower: 0, Upper: 0},
 		{Lower: 0, Upper: 0},
@@ -111,11 +111,10 @@ func TestZeroSolve(t *testing.T) {
 	// Solve the optimization problem.
 	simp.Primal(clp.NoValuesPass, clp.NoStartFinishOptions)
 	soln := simp.PrimalColumnSolution()
-   if soln == nil {
-      t.Error("got nil solution when testing Zero case")
-   }
-	// the real sign of success is that we got here without a panic
-
+	if soln == nil {
+		t.Error("got nil solution when testing Zero case")
+	}
+	// The real sign of success is that we got here without a panic.
 }
 
 // Test if we can solve the same problem as above but with the "easy" interface.
