@@ -44,6 +44,12 @@ func (pm *PackedMatrix) Reserve(newMaxMajorDim int, newMaxSize int, create bool)
 	C.reserve(pm.matrix, C.int(newMaxMajorDim), C.int(newMaxSize), b)
 }
 
+// SetDimensions reserves sufficient space in a packed matrix for appending
+// major-ordered vectors.
+func (pm *PackedMatrix) SetDimensions(numrows, numcols int) {
+	C.set_dimensions(pm.matrix, C.int(numrows), C.int(numcols))
+}
+
 // AppendColumn appends a sparse column to a packed matrix.  The column is
 // specified as a slice of {row number, value} pairs.
 func (pm *PackedMatrix) AppendColumn(col []Nonzero) {

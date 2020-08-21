@@ -35,7 +35,7 @@ func TestSimplexSetSeconds(t *testing.T) {
 	maxSeconds := 12.1
 	s.SetMaxSeconds(maxSeconds)
 	maxSecondsBack := s.MaxSeconds()
-	if !closeTo(maxSeconds, maxSecondsBack, 0.05) {
+	if !closeTo(maxSeconds/maxSecondsBack, 1.0, 0.01) {
 		t.Fatalf("Cannot set max seconds (wanted %v but saw %v", maxSeconds, maxSecondsBack)
 	}
 }
@@ -70,6 +70,43 @@ func TestPrimalSolve(t *testing.T) {
 		{Lower: -5, Upper: 3}, // [-5, 3]
 	}
 	obj := []float64{1.0, 2.0} // a + 2b
+	simp := clp.NewSimplex()
+	simp.LoadProblem(mat, nil, obj, rb, nil)
+	simp.SetOptimizationDirection(clp.Minimize)
+
+	// Solve the optimization problem.
+	simp.Primal(clp.NoValuesPass, clp.NoStartFinishOptions)
+	v := simp.ObjectiveValue()
+	soln := simp.PrimalColumnSolution()
+
+	// Check the results.
+	if !closeTo(soln[0], 1.75, 0.005) || !closeTo(soln[1], 2.25, 0.005) {
+		t.Fatalf("Expected [1.75 2.25] but observed %v", soln)
+	}
+	if !closeTo(v, 6.25, 0.005) {
+		t.Fatalf("Expected 6.25 but observed %.10g", v)
+	}
+	secStatus := simp.SecondaryStatus()
+	if secStatus != clp.SecondaryNone {
+		t.Fatalf("Expected %d secondary status but got %d", clp.SecondaryNone, secStatus)
+	}
+}
+
+func xxTestZeroSolve(t *testing.T) {
+	mat := clp.NewPackedMatrix()
+	mat.AppendColumn([]clp.Nonzero{
+		{Index: 0, Value: 0.0}, // a
+		{Index: 0, Value: 0.0}, // a
+	})
+	mat.AppendColumn([]clp.Nonzero{
+		{Index: 0, Value: 0.0}, // a
+		{Index: 0, Value: 0.0}, // a
+	})
+	rb := []clp.Bounds{
+		{Lower: 0, Upper: 0}, // [4, 9]
+		{Lower: 0, Upper: 0}, // [4, 9]
+	}
+	obj := []float64{1.0, 1.0} // a + 2b
 	simp := clp.NewSimplex()
 	simp.LoadProblem(mat, nil, obj, rb, nil)
 	simp.SetOptimizationDirection(clp.Minimize)

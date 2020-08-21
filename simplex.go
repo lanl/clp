@@ -61,6 +61,25 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 	// Get the matrix dimensions.
 	nr, nc := m.Dims()
 
+	// packed matrix does not count rows of 0
+	// nr is the length of the per-row vectors to allocate
+	// so ensure it is long enough to fit everything
+	if len(rb) > nr {
+		//		nr = len(rb)
+	}
+	if len(rowObj) > nr {
+		//		nr = len(rowObj)
+	}
+
+	// column count must match exactly
+	// packed matrix has a specified number of columns, all 0 still counts
+	if cb != nil && len(cb) != nc {
+		panic("column count mismatch 1")
+	}
+	if obj != nil && len(obj) != nc {
+		panic("column count mismatch 2")
+	}
+
 	// It's not safe to pass Go-allocated memory to C.  Hence, we use C's
 	// malloc to allocate the memory, which we free in the Simplex
 	// finalizer.  First, we convert cb to two C vectors, colLB and colUB.
