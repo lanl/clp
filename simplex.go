@@ -61,6 +61,20 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 	// Get the matrix dimensions.
 	nr, nc := m.Dims()
 
+	if rb != nil && len(rb) != nr {
+		panic(fmt.Sprintf("clp: Simplex.LoadProblem incorrect number of row bounds %d vs %d", len(rb), nr))
+	}
+	if rowObj != nil && len(rowObj) != nr {
+		panic(fmt.Sprintf("clp: Simplex.LoadProblem incorrect length of row objective function %d vs %d", len(rowObj), nr))
+	}
+
+	if cb != nil && len(cb) != nc {
+		panic(fmt.Sprintf("clp: Simplex.LoadProblem incorrect number of column bounds %d vs %d", len(cb), nc))
+	}
+	if obj != nil && len(obj) != nc {
+		panic(fmt.Sprintf("clp: Simplex.LoadProblem incorrect length of objective function %d vs %d", len(obj), nc))
+	}
+
 	// It's not safe to pass Go-allocated memory to C.  Hence, we use C's
 	// malloc to allocate the memory, which we free in the Simplex
 	// finalizer.  First, we convert cb to two C vectors, colLB and colUB.

@@ -11,6 +11,7 @@ extern "C" {
   // Declare all of our wrapper functions.
   extern clp_object* new_packed_matrix (void);
   extern void reserve (clp_object* matrix, int newMaxMajorDim, int newMaxSize, int create);
+  extern void set_dimensions (clp_object* matrix, int numrows, int numcols);
   extern void free_packed_matrix (clp_object* matrix);
   extern void pm_append_col (clp_object* matrix, const int vecsize,
                              const int* vecind, const double* vecelem);

@@ -18,6 +18,13 @@ extern "C" {
     ((CoinPackedMatrix*)matrix)->reserve(newMaxMajorDim, (CoinBigIndex)newMaxSize, bool(create));
   }
 
+  void set_dimensions (clp_object* matrix,
+		int numrows,
+		int numcols)
+  {
+    ((CoinPackedMatrix*)matrix)->setDimensions(numrows, numcols);
+  }
+
   // Free an existing CoinPackedMatrix.
   void free_packed_matrix (clp_object* matrix)
   {
