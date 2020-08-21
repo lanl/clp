@@ -92,41 +92,30 @@ func TestPrimalSolve(t *testing.T) {
 	}
 }
 
-func xxTestZeroSolve(t *testing.T) {
+func TestZeroSolve(t *testing.T) {
 	mat := clp.NewPackedMatrix()
 	mat.AppendColumn([]clp.Nonzero{
-		{Index: 0, Value: 0.0}, // a
-		{Index: 0, Value: 0.0}, // a
+		{Index: 0, Value: 1.0},
 	})
-	mat.AppendColumn([]clp.Nonzero{
-		{Index: 0, Value: 0.0}, // a
-		{Index: 0, Value: 0.0}, // a
-	})
+	// force a second all-0 row into the matrix
+   mat.SetDimensions(2,1)
 	rb := []clp.Bounds{
-		{Lower: 0, Upper: 0}, // [4, 9]
-		{Lower: 0, Upper: 0}, // [4, 9]
+		{Lower: 0, Upper: 0},
+		{Lower: 0, Upper: 0},
 	}
-	obj := []float64{1.0, 1.0} // a + 2b
+	obj := []float64{1.0}
 	simp := clp.NewSimplex()
 	simp.LoadProblem(mat, nil, obj, rb, nil)
 	simp.SetOptimizationDirection(clp.Minimize)
 
 	// Solve the optimization problem.
 	simp.Primal(clp.NoValuesPass, clp.NoStartFinishOptions)
-	v := simp.ObjectiveValue()
 	soln := simp.PrimalColumnSolution()
+   if soln == nil {
+      t.Error("got nil solution when testing Zero case")
+   }
+	// the real sign of success is that we got here without a panic
 
-	// Check the results.
-	if !closeTo(soln[0], 1.75, 0.005) || !closeTo(soln[1], 2.25, 0.005) {
-		t.Fatalf("Expected [1.75 2.25] but observed %v", soln)
-	}
-	if !closeTo(v, 6.25, 0.005) {
-		t.Fatalf("Expected 6.25 but observed %.10g", v)
-	}
-	secStatus := simp.SecondaryStatus()
-	if secStatus != clp.SecondaryNone {
-		t.Fatalf("Expected %d secondary status but got %d", clp.SecondaryNone, secStatus)
-	}
 }
 
 // Test if we can solve the same problem as above but with the "easy" interface.
