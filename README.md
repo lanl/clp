@@ -1,7 +1,7 @@
 clp
 ===
 
-[![GoDoc](https://godoc.org/github.com/lanl/clp?status.svg)](https://godoc.org/github.com/lanl/clp) [![Go Report Card](https://goreportcard.com/badge/github.com/lanl/clp)](https://goreportcard.com/report/github.com/lanl/clp)
+[![GoDoc](https://godoc.org/github.com/lanl/clp?status.svg)](https://godoc.org/github.com/lanl/clp) [![Go project version](https://badge.fury.io/go/github.com%2Flanl%2Fclp.svg)](https://badge.fury.io/go/github.com%2Flanl%2Fclp) [![Go Report Card](https://goreportcard.com/badge/github.com/lanl/clp)](https://goreportcard.com/report/github.com/lanl/clp)
 
 Description
 -----------
@@ -81,7 +81,7 @@ Installation
 pkg-config --libs clp
 ```
 
-Once CLP installation is confirmed, install the `clp` package with [`go get`](https://golang.org/cmd/go/#hdr-Download_and_install_packages_and_dependencies):
+Once CLP installation is confirmed, you're ready to install the `clp` package.  As ` clp` has opted into the [Go module system](https://blog.golang.org/using-go-modules), installation is in fact unnecessary if your program or package has done likewise.  Otherwise, install the `clp` package with [`go get`](https://golang.org/cmd/go/#hdr-Legacy_GOPATH_go_get):
 ```bash
 go get github.com/lanl/clp
 ```
