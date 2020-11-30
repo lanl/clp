@@ -150,11 +150,10 @@ func TestEasyPrimalSolve(t *testing.T) {
 	}
 }
 
-// Test dual sizes and sensitivities
+// Test dual sizes and sensitivities.
 func TestRowDual(t *testing.T) {
 	// Set up the following problem: Minimize a + 2b subject to {4 ≤ a + b
-	// ≤ 9, -5 ≤ 3a − b ≤ 3}.
-	//with a non-binding -10 ≤ a + b ≤ 10
+	// ≤ 9, -5 ≤ 3a − b ≤ 3} with a non-binding -10 ≤ a + b ≤ 10.
 	simp := clp.NewSimplex()
 	c := []float64{1.0, 2.0}
 	mat := [][]float64{
@@ -218,7 +217,6 @@ func TestRowDual(t *testing.T) {
 	if !closeTo(v-v3, dualRow[1]*incr, 0.0005) {
 		t.Fatalf("Expected %v but observed %v", v-v3, dualRow[1]*incr)
 	}
-
 }
 
 // Ensure that we can both query and change the primal tolerance used in a
