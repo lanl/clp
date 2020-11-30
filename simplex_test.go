@@ -150,6 +150,77 @@ func TestEasyPrimalSolve(t *testing.T) {
 	}
 }
 
+// Test dual sizes and sensitivities
+func TestRowDual(t *testing.T) {
+	// Set up the following problem: Minimize a + 2b subject to {4 ≤ a + b
+	// ≤ 9, -5 ≤ 3a − b ≤ 3}.
+	//with a non-binding -10 ≤ a + b ≤ 10
+	simp := clp.NewSimplex()
+	c := []float64{1.0, 2.0}
+	mat := [][]float64{
+		// LB  A    B   UB
+		{4.0, 1.0, 1.0, 9.0},   // 4 ≤ a + b ≤ 9
+		{-5.0, 3.0, -1.0, 3.0}, // -5 ≤ 3a − b ≤ 3
+		{-10.0, 1.0, 1.0, 10},  // -10 ≤ a + b ≤ 10
+	}
+	simp.EasyLoadDenseProblem(c, nil, mat)
+	simp.SetOptimizationDirection(clp.Minimize)
+
+	// Solve the optimization problem.
+	simp.Primal(clp.NoValuesPass, clp.NoStartFinishOptions)
+	v := simp.ObjectiveValue()
+	soln := simp.PrimalColumnSolution()
+	dualRow := simp.DualRowSolution()
+
+	if len(soln) != 2 {
+		t.Fatalf("Primal column solution has unexpeceted length %d vs 2", len(soln))
+	}
+	if len(dualRow) != 3 {
+		t.Fatalf("Dual row solution has unexpeceted length %d vs 3", len(soln))
+	}
+
+	// Check the results.
+	if !closeTo(soln[0], 1.75, 0.005) || !closeTo(soln[1], 2.25, 0.005) {
+		t.Fatalf("Expected [1.75 2.25] but observed %v", soln)
+	}
+	if !closeTo(v, 6.25, 0.005) {
+		t.Fatalf("Expected 6.25 but observed %.10g", v)
+	}
+	if !closeTo(dualRow[0], 1.75, 0.005) || !closeTo(dualRow[1], -0.25, 0.005) || !closeTo(dualRow[2], 0, 0.005) {
+		t.Fatalf("Expected [1.75 -0.25 0] but observed %v", dualRow)
+	}
+	secStatus := simp.SecondaryStatus()
+	if secStatus != clp.SecondaryNone {
+		t.Fatalf("Expected %d secondary status but got %d", clp.SecondaryNone, secStatus)
+	}
+
+	// Now check the dual sensitivities
+	incr := 0.5
+	// Shift the first row bounds.
+	mat[0][0] -= incr
+	mat[0][3] += incr
+	simp.EasyLoadDenseProblem(c, nil, mat)
+	simp.SetOptimizationDirection(clp.Minimize)
+	simp.Primal(clp.NoValuesPass, clp.NoStartFinishOptions)
+	v2 := simp.ObjectiveValue()
+	if !closeTo(v-v2, dualRow[0]*incr, 0.0005) {
+		t.Fatalf("Expected %v but observed %v", v-v2, dualRow[0]*incr)
+	}
+	// Revert first row and shift second row in the opposite direction
+	mat[0][0] += incr
+	mat[0][3] -= incr
+	mat[1][0] += incr
+	mat[1][3] -= incr
+	simp.EasyLoadDenseProblem(c, nil, mat)
+	simp.SetOptimizationDirection(clp.Minimize)
+	simp.Primal(clp.NoValuesPass, clp.NoStartFinishOptions)
+	v3 := simp.ObjectiveValue()
+	if !closeTo(v-v3, dualRow[1]*incr, 0.0005) {
+		t.Fatalf("Expected %v but observed %v", v-v3, dualRow[1]*incr)
+	}
+
+}
+
 // Ensure that we can both query and change the primal tolerance used in a
 // simplex model.
 func TestGetSetSimplexPrimalTolerance(t *testing.T) {
