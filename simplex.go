@@ -322,8 +322,8 @@ func (s *Simplex) DualColumnSolution() []float64 {
 
 // PrimalRowSolution returns the primal row solution computed by a solver.
 func (s *Simplex) PrimalRowSolution() []float64 {
-	_, nc := s.Dims()
-	soln := make([]float64, nc)
+	nr, _ := s.Dims()
+	soln := make([]float64, nr)
 	cSoln := C.simplex_get_prim_row_soln(s.model)
 	for i := range soln {
 		soln[i] = cGetArrayDouble(unsafe.Pointer(cSoln), i)
@@ -333,8 +333,8 @@ func (s *Simplex) PrimalRowSolution() []float64 {
 
 // DualRowSolution returns the dual row solution computed by a solver.
 func (s *Simplex) DualRowSolution() []float64 {
-	_, nc := s.Dims()
-	soln := make([]float64, nc)
+	nr, _ := s.Dims()
+	soln := make([]float64, nr)
 	cSoln := C.simplex_get_dual_row_soln(s.model)
 	for i := range soln {
 		soln[i] = cGetArrayDouble(unsafe.Pointer(cSoln), i)
