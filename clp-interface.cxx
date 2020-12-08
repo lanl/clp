@@ -200,4 +200,23 @@ extern "C" {
     return ((ClpModel*)model)->writeMps(filename);
   }
 
+  int primal_ranging(clp_object* model, const int number_check, const int* which,
+                     double* value_increase, int* sequence_increase,
+                     double* value_decrease, int* sequence_decrease)
+  {
+    return ((ClpSimplex*)model)->primalRanging(number_check, which,
+                                               value_increase, sequence_increase,
+                                               value_decrease, sequence_decrease);
+  }
+
+  int dual_ranging(clp_object* model, const int number_check, const int* which,
+                   double* cost_increase, int* sequence_increase,
+                   double* cost_decrease, int* sequence_decrease,
+                   double* value_increase, double* value_decrease)
+  {
+    return ((ClpSimplex*)model)->dualRanging(number_check, which,
+                                             cost_increase, sequence_increase,
+                                             cost_decrease, sequence_decrease,
+                                             value_increase, value_decrease);
+  }
 }
