@@ -46,6 +46,13 @@ extern "C" {
   extern double max_seconds(clp_object* model);
   extern int secondary_status(clp_object* model);
   extern int write_mps(clp_object* model, const char * filename);
+  extern int primal_ranging(clp_object* model, const int number_check, const int* which,
+                            double* value_increase, int* sequence_increase,
+                            double* value_decrease, int* sequence_decrease);
+  extern int dual_ranging(clp_object* model, const int number_check, const int* which,
+                          double* cost_increase, int* sequence_increase,
+                          double* cost_decrease, int* sequence_decrease,
+                          double* value_increase, double* value_decrease);
 
 #ifdef __cplusplus
 }

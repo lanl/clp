@@ -399,3 +399,130 @@ func (s *Simplex) EasyLoadDenseProblem(obj []float64, varBounds [][2]float64, in
 	// Load the problem into the model.
 	s.LoadProblem(mat, cb, obj, rb, nil)
 }
+
+// PrimalRanging returns the increases and decreases in value of the given variables
+// that do not change the solution basis.
+// Panics unless all input slices are of length n.
+// Returns non-0 if infeasible or unbounded.
+func (s *Simplex) PrimalRanging(n int, which []int,
+	valueIncrease []float64, sequenceIncrease []int,
+	valueDecrease []float64, sequenceDecrease []int) int {
+	// Check expected lengths.
+	if n != len(which) {
+		panic("unexpected which array length")
+	}
+	if n != len(valueIncrease) {
+		panic("unexpected valueIncrease array length")
+	}
+	if n != len(sequenceIncrease) {
+		panic("unexpected sequenceIncrease array length")
+	}
+	if n != len(valueDecrease) {
+		panic("unexpected valueDecrease array length")
+	}
+	if n != len(sequenceDecrease) {
+		panic("unexpected sequenceDecrease array length")
+	}
+
+	// Allocate C memory.
+	cWhich := cNewArrayIntFrom(which)
+	cvalInc := cNewArrayDoubleFrom(valueIncrease)
+	cseqInc := cNewArrayIntFrom(sequenceIncrease)
+	cvalDec := cNewArrayDoubleFrom(valueDecrease)
+	cseqDec := cNewArrayIntFrom(sequenceDecrease)
+
+	// CLP call.
+	status := C.primal_ranging(s.model, C.int(n), (*C.int)(cWhich),
+		(*C.double)(cvalInc), (*C.int)(cseqInc),
+		(*C.double)(cvalDec), (*C.int)(cseqDec))
+
+	// Copy back and free memory.
+	cCopyArrayDouble(valueIncrease, cvalInc)
+	cCopyArrayInt(sequenceIncrease, cseqInc)
+	cCopyArrayDouble(valueDecrease, cvalDec)
+	cCopyArrayInt(sequenceDecrease, cseqDec)
+
+	cFree(cWhich)
+	cFree(cvalInc)
+	cFree(cseqInc)
+	cFree(cvalDec)
+	cFree(cseqDec)
+
+	return int(status)
+}
+
+// DualRanging returns the increases and decreases in costs of the given variables
+// that do not change the solution basis.
+// valueIncrease and valueDecrease can be nil.  If both are non-nil they are filled
+// with the new values corresponding to those cost changes.
+// Panics unless all non-nil input slices are of length n.
+// Returns non-0 if infeasible or unbounded.
+func (s *Simplex) DualRanging(n int, which []int,
+	costIncrease []float64, sequenceIncrease []int,
+	costDecrease []float64, sequenceDecrease []int,
+	valueIncrease, valueDecrease []float64) int {
+	// Check expected lengths.
+	if n != len(which) {
+		panic("unexpected which array length")
+	}
+	if n != len(costIncrease) {
+		panic("unexpected costIncrease array length")
+	}
+	if n != len(sequenceIncrease) {
+		panic("unexpected sequenceIncrease array length")
+	}
+	if n != len(costDecrease) {
+		panic("unexpected costDecrease array length")
+	}
+	if n != len(sequenceDecrease) {
+		panic("unexpected sequenceDecrease array length")
+	}
+
+	// These parameters are only used if both are non-nil.
+	var cvalInc, cvalDec unsafe.Pointer
+	if valueIncrease != nil && valueDecrease != nil {
+		if n != len(valueIncrease) {
+			panic("unexpected valueDecrease array length")
+		}
+		if n != len(valueDecrease) {
+			panic("unexpected valueDecrease array length")
+		}
+		cvalInc = cNewArrayDoubleFrom(valueIncrease)
+		cvalDec = cNewArrayDoubleFrom(valueDecrease)
+	}
+
+	// Allocate C memory.
+	cWhich := cNewArrayIntFrom(which)
+	cseqInc := cNewArrayIntFrom(sequenceIncrease)
+	cseqDec := cNewArrayIntFrom(sequenceDecrease)
+
+	ccostInc := cNewArrayDoubleFrom(costIncrease)
+	ccostDec := cNewArrayDoubleFrom(costDecrease)
+
+	// CLP call.
+	status := C.dual_ranging(s.model, C.int(n), (*C.int)(cWhich),
+		(*C.double)(ccostInc), (*C.int)(cseqInc),
+		(*C.double)(ccostDec), (*C.int)(cseqDec),
+		(*C.double)(cvalInc), (*C.double)(cvalDec))
+
+	// Copy data back and free memory.
+	cCopyArrayInt(sequenceIncrease, cseqInc)
+	cCopyArrayInt(sequenceDecrease, cseqDec)
+	cCopyArrayDouble(costIncrease, ccostInc)
+	cCopyArrayDouble(costDecrease, ccostDec)
+
+	cFree(cWhich)
+	cFree(cseqInc)
+	cFree(cseqDec)
+	cFree(ccostInc)
+	cFree(ccostDec)
+
+	if cvalInc != nil {
+		cCopyArrayDouble(valueIncrease, cvalInc)
+		cCopyArrayDouble(valueDecrease, cvalDec)
+		cFree(cvalInc)
+		cFree(cvalDec)
+	}
+
+	return int(status)
+}

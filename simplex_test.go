@@ -217,6 +217,47 @@ func TestRowDual(t *testing.T) {
 	if !closeTo(v-v3, dualRow[1]*incr, 0.0005) {
 		t.Fatalf("Expected %v but observed %v", v-v3, dualRow[1]*incr)
 	}
+	which := []int{0, 1}
+	n := len(which)
+	vi := make([]float64, n)
+	si := make([]int, n)
+	vd := make([]float64, n)
+	sd := make([]int, n)
+	simp.PrimalRanging(n, which, vi, si, vd, sd)
+	if !closeTo(vi[0], 1.625, 0.005) || !closeTo(vi[1], 2.375, 0.005) {
+		t.Fatalf("Expected [1.625, 2.375] value increase but observed %v", vi)
+	}
+	if si[0] != 0 || si[1] != 1 {
+		t.Fatalf("Expected [0, 1] sequence increase but observed %v", si)
+	}
+	if !closeTo(vd[0], math.MaxFloat64, 0.005) || !closeTo(vd[1], math.MaxFloat64, 0.005) {
+		t.Fatalf("Expected [math.MaxFloat64, math.MaxFloat64] value increase but observed %v", vd)
+	}
+	if sd[0] != 0 || sd[1] != 1 {
+		t.Fatalf("Expected [0, 1] sequence increase but observed %v", sd)
+	}
+	ci := make([]float64, n)
+	cd := make([]float64, n)
+	simp.DualRanging(n, which, ci, si, cd, sd, nil, nil)
+	if !closeTo(ci[0], 1, 0.005) || !closeTo(ci[1], math.MaxFloat64, 0.005) {
+		t.Fatalf("Expected [1, math.MaxFloat64] cost increase but observed %v", vi)
+	}
+	if !closeTo(cd[0], 7, 0.005) || !closeTo(cd[1], 1, 0.005) {
+		t.Fatalf("Expected [7, 1] cost decrease but observed %v", vd)
+	}
+	if si[0] != 3 || si[1] != -1 {
+		t.Fatalf("Expected [3, -1] sequence increase but observed %v", si)
+	}
+	if sd[0] != 2 || sd[1] != 3 {
+		t.Fatalf("Expected [2, 3] sequence decrease but observed %v", sd)
+	}
+	simp.DualRanging(n, which, ci, si, cd, sd, vi, vd)
+	if !closeTo(vi[0], -math.MaxFloat64, 0.005) || !closeTo(vi[1], 2.375, 0.005) {
+		t.Fatalf("Expected [-math.MaxFloat64, 2.375] value increase but observed %v", vi)
+	}
+	if !closeTo(vd[0], 3.125, 0.005) || !closeTo(vd[1], 4, 0.005) {
+		t.Fatalf("Expected [3.125, 4] value decrease but observed %v", vd)
+	}
 }
 
 // Ensure that we can both query and change the primal tolerance used in a
