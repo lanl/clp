@@ -400,10 +400,10 @@ func (s *Simplex) EasyLoadDenseProblem(obj []float64, varBounds [][2]float64, in
 	s.LoadProblem(mat, cb, obj, rb, nil)
 }
 
-// PrimalRanging returns the increases and decreases in value of the given variables
-// that do not change the solution basis.
-// Panics unless all input slices are of length n.
-// Returns non-0 if infeasible or unbounded.
+// PrimalRanging returns the increases and decreases in value of the given
+// variables that do not change the solution basis.  It panics unless all input
+// slices are of length n and returns non-0 if the solution is infeasible or
+// unbounded.
 func (s *Simplex) PrimalRanging(n int, which []int,
 	valueIncrease []float64, sequenceIncrease []int,
 	valueDecrease []float64, sequenceDecrease []int) int {
@@ -424,39 +424,32 @@ func (s *Simplex) PrimalRanging(n int, which []int,
 		panic("unexpected sequenceDecrease array length")
 	}
 
-	// Allocate C memory.
-	cWhich := cNewArrayIntFrom(which)
-	cvalInc := cNewArrayDoubleFrom(valueIncrease)
-	cseqInc := cNewArrayIntFrom(sequenceIncrease)
-	cvalDec := cNewArrayDoubleFrom(valueDecrease)
-	cseqDec := cNewArrayIntFrom(sequenceDecrease)
+	// Convert Go ints to C ints.
+	cWhich := make([]C.int, len(which))
+	copyIntsGoC(cWhich, which)
+	cSeqInc := make([]C.int, len(sequenceIncrease))
+	copyIntsGoC(cSeqInc, sequenceIncrease)
+	cSeqDec := make([]C.int, len(sequenceDecrease))
+	copyIntsGoC(cSeqDec, sequenceDecrease)
 
-	// CLP call.
-	status := C.primal_ranging(s.model, C.int(n), (*C.int)(cWhich),
-		(*C.double)(cvalInc), (*C.int)(cseqInc),
-		(*C.double)(cvalDec), (*C.int)(cseqDec))
+	// Invoke CLP.
+	status := C.primal_ranging(s.model, C.int(n), &cWhich[0],
+		(*C.double)(&valueIncrease[0]), &cSeqInc[0],
+		(*C.double)(&valueDecrease[0]), &cSeqDec[0])
 
-	// Copy back and free memory.
-	cCopyArrayDouble(valueIncrease, cvalInc)
-	cCopyArrayInt(sequenceIncrease, cseqInc)
-	cCopyArrayDouble(valueDecrease, cvalDec)
-	cCopyArrayInt(sequenceDecrease, cseqDec)
-
-	cFree(cWhich)
-	cFree(cvalInc)
-	cFree(cseqInc)
-	cFree(cvalDec)
-	cFree(cseqDec)
-
+	// Convert C ints back to Go ints.
+	copyIntsCGo(which, cWhich)
+	copyIntsCGo(sequenceIncrease, cSeqInc)
+	copyIntsCGo(sequenceDecrease, cSeqDec)
 	return int(status)
 }
 
-// DualRanging returns the increases and decreases in costs of the given variables
-// that do not change the solution basis.
-// valueIncrease and valueDecrease can be nil.  If both are non-nil they are filled
-// with the new values corresponding to those cost changes.
-// Panics unless all non-nil input slices are of length n.
-// Returns non-0 if infeasible or unbounded.
+// DualRanging returns the increases and decreases in costs of the given
+// variables that do not change the solution basis.  valueIncrease and
+// valueDecrease can be nil.  If both are non-nil they are filled with the new
+// values corresponding to those cost changes.  This method panics unless all
+// non-nil input slices are of length n and returns non-0 if the solution is
+// infeasible or unbounded.
 func (s *Simplex) DualRanging(n int, which []int,
 	costIncrease []float64, sequenceIncrease []int,
 	costDecrease []float64, sequenceDecrease []int,
@@ -479,7 +472,7 @@ func (s *Simplex) DualRanging(n int, which []int,
 	}
 
 	// These parameters are only used if both are non-nil.
-	var cvalInc, cvalDec unsafe.Pointer
+	var cValInc, cValDec *C.double
 	if valueIncrease != nil && valueDecrease != nil {
 		if n != len(valueIncrease) {
 			panic("unexpected valueDecrease array length")
@@ -487,42 +480,27 @@ func (s *Simplex) DualRanging(n int, which []int,
 		if n != len(valueDecrease) {
 			panic("unexpected valueDecrease array length")
 		}
-		cvalInc = cNewArrayDoubleFrom(valueIncrease)
-		cvalDec = cNewArrayDoubleFrom(valueDecrease)
+		cValInc = (*C.double)(&valueIncrease[0])
+		cValDec = (*C.double)(&valueDecrease[0])
 	}
 
-	// Allocate C memory.
-	cWhich := cNewArrayIntFrom(which)
-	cseqInc := cNewArrayIntFrom(sequenceIncrease)
-	cseqDec := cNewArrayIntFrom(sequenceDecrease)
+	// Convert Go ints to C ints.
+	cWhich := make([]C.int, len(which))
+	copyIntsGoC(cWhich, which)
+	cSeqInc := make([]C.int, len(sequenceIncrease))
+	copyIntsGoC(cSeqInc, sequenceIncrease)
+	cSeqDec := make([]C.int, len(sequenceDecrease))
+	copyIntsGoC(cSeqDec, sequenceDecrease)
 
-	ccostInc := cNewArrayDoubleFrom(costIncrease)
-	ccostDec := cNewArrayDoubleFrom(costDecrease)
+	// Invoke CLP.
+	status := C.dual_ranging(s.model, C.int(n), &cWhich[0],
+		(*C.double)(&costIncrease[0]), &cSeqInc[0],
+		(*C.double)(&costDecrease[0]), &cSeqDec[0],
+		cValInc, cValDec)
 
-	// CLP call.
-	status := C.dual_ranging(s.model, C.int(n), (*C.int)(cWhich),
-		(*C.double)(ccostInc), (*C.int)(cseqInc),
-		(*C.double)(ccostDec), (*C.int)(cseqDec),
-		(*C.double)(cvalInc), (*C.double)(cvalDec))
-
-	// Copy data back and free memory.
-	cCopyArrayInt(sequenceIncrease, cseqInc)
-	cCopyArrayInt(sequenceDecrease, cseqDec)
-	cCopyArrayDouble(costIncrease, ccostInc)
-	cCopyArrayDouble(costDecrease, ccostDec)
-
-	cFree(cWhich)
-	cFree(cseqInc)
-	cFree(cseqDec)
-	cFree(ccostInc)
-	cFree(ccostDec)
-
-	if cvalInc != nil {
-		cCopyArrayDouble(valueIncrease, cvalInc)
-		cCopyArrayDouble(valueDecrease, cvalDec)
-		cFree(cvalInc)
-		cFree(cvalDec)
-	}
-
+	// Convert C ints back to Go ints.
+	copyIntsCGo(which, cWhich)
+	copyIntsCGo(sequenceIncrease, cSeqInc)
+	copyIntsCGo(sequenceDecrease, cSeqDec)
 	return int(status)
 }

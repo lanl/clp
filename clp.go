@@ -103,38 +103,22 @@ func cGetArrayDouble(a unsafe.Pointer, i int) float64 {
 	return float64(*(*C.double)(ptr))
 }
 
-// cNewArrayDoubleFrom creates a new c double array
-// and initializes it from the given slice.
-func cNewArrayDoubleFrom(s []float64) unsafe.Pointer {
-	n := len(s)
-	cArray := cMalloc(n, C.double(0.0))
-	for i, v := range s {
-		cSetArrayDouble(cArray, i, v)
+// copyIntsGoC copies a slice of Go ints to a slice of C ints.
+func copyIntsGoC(cs []C.int, gs []int) {
+	if len(gs) != len(cs) {
+		panic("Slices of different sizes were passed to copyIntsGoC")
 	}
-	return cArray
-}
-
-// cNewArrayIntFrom creates a new c int array
-// and initializes it from the given slice.
-func cNewArrayIntFrom(s []int) unsafe.Pointer {
-	n := len(s)
-	cArray := cMalloc(n, C.int(0))
-	for i, v := range s {
-		cSetArrayInt(cArray, i, v)
-	}
-	return cArray
-}
-
-// cCopyArrayInt copies the given c int array into the slice.
-func cCopyArrayInt(s []int, u unsafe.Pointer) {
-	for i := range s {
-		s[i] = cGetArrayInt(u, i)
+	for i, g := range gs {
+		cs[i] = C.int(g)
 	}
 }
 
-// cCopyArrayDouble copies the given c double array into the slice.
-func cCopyArrayDouble(s []float64, u unsafe.Pointer) {
-	for i := range s {
-		s[i] = cGetArrayDouble(u, i)
+// copyIntsCGo copies a slice of C ints to a slice of Go ints.
+func copyIntsCGo(gs []int, cs []C.int) {
+	if len(gs) != len(cs) {
+		panic("Slices of different sizes were passed to copyIntsCGo")
+	}
+	for i, c := range cs {
+		gs[i] = int(c)
 	}
 }
