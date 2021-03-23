@@ -11,16 +11,16 @@ extern "C" {
   }
 
   void reserve (clp_object* matrix,
-		int newMaxMajorDim,
-		int newMaxSize,
-		int create)
+                int newMaxMajorDim,
+                int newMaxSize,
+                int create)
   {
     ((CoinPackedMatrix*)matrix)->reserve(newMaxMajorDim, (CoinBigIndex)newMaxSize, bool(create));
   }
 
   void set_dimensions (clp_object* matrix,
-		int numrows,
-		int numcols)
+                int numrows,
+                int numcols)
   {
     ((CoinPackedMatrix*)matrix)->setDimensions(numrows, numcols);
   }
@@ -36,6 +36,12 @@ extern "C" {
                       const int* vecind, const double* vecelem)
   {
     ((CoinPackedMatrix*)matrix)->appendCol(vecsize, vecind, vecelem);
+  }
+
+  // Delete a number of columns from a CoinPackedMatrix.
+  void pm_delete_cols (clp_object* matrix, const int ncols, const int* columns)
+  {
+    ((CoinPackedMatrix*)matrix)->deleteCols(ncols, columns);
   }
 
   // Retrieve a CoinPackedMatrix's rows and columns.

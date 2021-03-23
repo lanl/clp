@@ -19,19 +19,29 @@ type PackedMatrix struct {
 
 // NewPackedMatrix allocates a new, empty, packed matrix.
 func NewPackedMatrix() *PackedMatrix {
-	m := &PackedMatrix{
+	pm := &PackedMatrix{
 		matrix: C.new_packed_matrix(),
 		allocs: make([]unsafe.Pointer, 0, 64),
 	}
-	runtime.SetFinalizer(m, func(m *PackedMatrix) {
+	runtime.SetFinalizer(pm, func(pm *PackedMatrix) {
 		// When we're finished with it, free the matrix and all the
 		// memory it referred to.
-		C.free_packed_matrix(m.matrix)
-		for _, p := range m.allocs {
+		pm.freeMemory()
+	})
+	return pm
+}
+
+// freeMemory immediately frees the memory associated with a packed
+// matrix.  The matrix should not be used after this method returns.
+func (pm *PackedMatrix) freeMemory() {
+	if pm.matrix != nil {
+		C.free_packed_matrix(pm.matrix)
+		for _, p := range pm.allocs {
 			cFree(p)
 		}
-	})
-	return m
+		pm.allocs = nil
+		pm.matrix = nil
+	}
 }
 
 // Reserve reserves sufficient space in a packed matrix for appending
@@ -71,6 +81,16 @@ func (pm *PackedMatrix) AppendColumn(col []Nonzero) {
 
 	// Tell our C wrapper function to append the column.
 	C.pm_append_col(pm.matrix, C.int(nElts), (*C.int)(rows), (*C.double)(vals))
+}
+
+// DeleteColumns removes a list of columns from a packed matrix.
+func (pm *PackedMatrix) DeleteColumns(cols []int) {
+	nc :=len(cols)
+	cs := cMalloc(nc, C.int(0))
+	for i, c := range cols {
+		cSetArrayInt(cs, i, c)
+	}
+	C.pm_delete_cols(pm.matrix, C.int(nc), (*C.int)(cs))
 }
 
 // Dims returns a packed matrix's dimensions (rows and columns).

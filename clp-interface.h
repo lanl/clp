@@ -15,6 +15,8 @@ extern "C" {
   extern void free_packed_matrix (clp_object* matrix);
   extern void pm_append_col (clp_object* matrix, const int vecsize,
                              const int* vecind, const double* vecelem);
+  extern void pm_delete_cols (clp_object* matrix, const int ncols,
+			      const int* columns);
   extern void pm_get_dims (clp_object* matrix, int* nrows, int* ncols);
   extern void pm_get_sparse_data (clp_object* matrix, const int** starts,
                                   const int** lengths, const int** indices,

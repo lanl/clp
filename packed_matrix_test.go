@@ -37,6 +37,21 @@ func TestAddColumns(t *testing.T) {
 	addColumns(m, 1000, 1000)
 }
 
+// Test if we can remove columns from a packed matrix.
+func TestDeleteColumns(t *testing.T) {
+	m := clp.NewPackedMatrix()
+	addColumns(m, 100, 5)
+	_, c := m.Dims()
+	if c != 5 {
+		t.Fatalf("Expected 5 colunms but saw %d", c)
+	}
+	m.DeleteColumns([]int{1, 3, 4})
+	_, c = m.Dims()
+	if c != 2 {
+		t.Fatalf("Expected 2 colunms but saw %d", c)
+	}
+}
+
 // Test if we can query a packed matrix's dimensions.
 func TestDims(t *testing.T) {
 	for _, trials := range [...][2]int{
