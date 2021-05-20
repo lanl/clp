@@ -24,8 +24,7 @@ func NewPackedMatrix() *PackedMatrix {
 		allocs: make([]unsafe.Pointer, 0, 64),
 	}
 	runtime.SetFinalizer(pm, func(pm *PackedMatrix) {
-		// When we're finished with it, free the matrix and all the
-		// memory it referred to.
+		// Free the matrix and all the memory to which it refers.
 		pm.freeMemory()
 	})
 	return pm
@@ -85,7 +84,7 @@ func (pm *PackedMatrix) AppendColumn(col []Nonzero) {
 
 // DeleteColumns removes a list of columns from a packed matrix.
 func (pm *PackedMatrix) DeleteColumns(cols []int) {
-	nc :=len(cols)
+	nc := len(cols)
 	cs := cMalloc(nc, C.int(0))
 	for i, c := range cols {
 		cSetArrayInt(cs, i, c)

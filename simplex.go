@@ -16,6 +16,7 @@ import (
 type Simplex struct {
 	model  *C.clp_object    // Pointer to a ClpSimplex
 	allocs []unsafe.Pointer // Row/column data to which the ClpSimplex points
+	matrix Matrix           // Currently loaded matrix, needed here to keep the C++ object live
 }
 
 // NewSimplex creates a new simplex model.
@@ -23,6 +24,7 @@ func NewSimplex() *Simplex {
 	s := &Simplex{
 		model:  C.new_simplex_model(),
 		allocs: make([]unsafe.Pointer, 0, 64),
+		matrix: nil,
 	}
 	runtime.SetFinalizer(s, func(s *Simplex) {
 		// When we're finished with it, free the model and all the
@@ -57,6 +59,7 @@ func (s *Simplex) LoadProblem(m Matrix, cb []Bounds, obj []float64, rb []Bounds,
 	if !ok {
 		panic(fmt.Sprintf("clp: Simplex.LoadProblem cannot currently accept a Matrix of type %T", m))
 	}
+	s.matrix = m
 
 	// Get the matrix dimensions.
 	nr, nc := m.Dims()
