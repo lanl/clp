@@ -33,6 +33,9 @@ func NewSimplex() *Simplex {
 		for _, p := range s.allocs {
 			cFree(p)
 		}
+		s.model = nil
+		s.allocs = nil
+		s.matrix = nil
 	})
 	return s
 }

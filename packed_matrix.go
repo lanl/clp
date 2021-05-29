@@ -30,16 +30,16 @@ func NewPackedMatrix() *PackedMatrix {
 	return pm
 }
 
-// freeMemory immediately frees the memory associated with a packed
-// matrix.  The matrix should not be used after this method returns.
+// freeMemory immediately frees the memory associated with a packed matrix.
+// The matrix should not be used after this method returns.
 func (pm *PackedMatrix) freeMemory() {
 	if pm.matrix != nil {
 		C.free_packed_matrix(pm.matrix)
 		for _, p := range pm.allocs {
 			cFree(p)
 		}
-		pm.allocs = nil
 		pm.matrix = nil
+		pm.allocs = nil
 	}
 }
 
