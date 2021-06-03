@@ -312,6 +312,7 @@ func (s *Simplex) PrimalColumnSolution() []float64 {
 	for i := range soln {
 		soln[i] = cGetArrayDouble(unsafe.Pointer(cSoln), i)
 	}
+	runtime.KeepAlive(s.matrix)
 	return soln
 }
 
@@ -323,6 +324,7 @@ func (s *Simplex) DualColumnSolution() []float64 {
 	for i := range soln {
 		soln[i] = cGetArrayDouble(unsafe.Pointer(cSoln), i)
 	}
+	runtime.KeepAlive(s.matrix)
 	return soln
 }
 
@@ -334,6 +336,7 @@ func (s *Simplex) PrimalRowSolution() []float64 {
 	for i := range soln {
 		soln[i] = cGetArrayDouble(unsafe.Pointer(cSoln), i)
 	}
+	runtime.KeepAlive(s.matrix)
 	return soln
 }
 
@@ -345,6 +348,7 @@ func (s *Simplex) DualRowSolution() []float64 {
 	for i := range soln {
 		soln[i] = cGetArrayDouble(unsafe.Pointer(cSoln), i)
 	}
+	runtime.KeepAlive(s.matrix)
 	return soln
 }
 
