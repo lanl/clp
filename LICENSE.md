@@ -1,3 +1,5 @@
+[This is essentially a BSD-3-Clause license, https://www.opensource.org/licenses/bsd-3-clause]
+
 Copyright © 2011, Triad National Security, LLC
 All rights reserved.
 
