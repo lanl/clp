@@ -6,7 +6,7 @@ clp
 Description
 -----------
 
-The `clp` package provides a [Go](https://golang.org/) interface to the [COIN-OR Linear Programming](http://www.coin-or.org/projects/Clp.xml) (CLP) library, part of the [COIN-OR](http://www.coin-or.org/) (COmputational INfrastructure for Operations Research) suite.
+The `clp` package provides a [Go](https://go.dev/) interface to the [COIN-OR Linear Programming](https://www.coin-or.org/Clp/) (CLP) library, part of the [COIN-OR](http://www.coin-or.org/) (COmputational INfrastructure for Operations Research) suite.
 
 [Linear programming](https://en.wikipedia.org/wiki/Linear_programming) (LP) is a method for maximizing or minimizing a linear expression subject to a set of constraints expressed as inequalities.  As an example that's simple enough to solve by hand, what roll of three six-sided dice has the largest total value if no two dice are allowed have the same value and the difference in value between the first and second largest dice must be smaller than the difference in value between the second and third largest dice?  From an LP standpoint, the objective function we need to maximize to answer that question is *a* + *b* + *c*, where each variable represents the value on one die.  The first constraint is that each die be six sided:
 
