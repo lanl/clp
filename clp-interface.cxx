@@ -38,10 +38,23 @@ extern "C" {
     ((CoinPackedMatrix*)matrix)->appendCol(vecsize, vecind, vecelem);
   }
 
+  // Append a (sparse) row to a CoinPackedMatrix.
+  void pm_append_row (clp_object* matrix, const int vecsize,
+                      const int* vecind, const double* vecelem)
+  {
+    ((CoinPackedMatrix*)matrix)->appendRow(vecsize, vecind, vecelem);
+  }
+
   // Delete a number of columns from a CoinPackedMatrix.
   void pm_delete_cols (clp_object* matrix, const int ncols, const int* columns)
   {
     ((CoinPackedMatrix*)matrix)->deleteCols(ncols, columns);
+  }
+
+  // Delete a number of rows from a CoinPackedMatrix.
+  void pm_delete_rows (clp_object* matrix, const int nrows, const int* rows)
+  {
+    ((CoinPackedMatrix*)matrix)->deleteRows(nrows, rows);
   }
 
   // Retrieve a CoinPackedMatrix's rows and columns.

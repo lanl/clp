@@ -82,6 +82,29 @@ func (pm *PackedMatrix) AppendColumn(col []Nonzero) {
 	C.pm_append_col(pm.matrix, C.int(nElts), (*C.int)(rows), (*C.double)(vals))
 }
 
+// AppendRow appends a sparse row to a packed matrix.  The row is
+// specified as a slice of {column number, value} pairs.
+func (pm *PackedMatrix) AppendRow(row []Nonzero) {
+	// It's not safe to pass Go-allocated memory to C.  Hence, we use C's
+	// malloc to allocate the memory, which we free in the PackedMatrix
+	// finalizer.
+	nElts := len(row)
+	cols := cMalloc(nElts, C.int(0))
+	pm.allocs = append(pm.allocs, cols)
+	vals := cMalloc(nElts, C.double(0.0))
+	pm.allocs = append(pm.allocs, vals)
+
+	// Convert from the given array of two-element structs to two flat
+	// vectors, and replace Go datatypes with C datatypes.
+	for i, r := range row {
+		cSetArrayInt(cols, i, r.Index)
+		cSetArrayDouble(vals, i, r.Value)
+	}
+
+	// Tell our C wrapper function to append the row.
+	C.pm_append_row(pm.matrix, C.int(nElts), (*C.int)(cols), (*C.double)(vals))
+}
+
 // DeleteColumns removes a list of columns from a packed matrix.
 func (pm *PackedMatrix) DeleteColumns(cols []int) {
 	nc := len(cols)
@@ -90,6 +113,16 @@ func (pm *PackedMatrix) DeleteColumns(cols []int) {
 		cSetArrayInt(cs, i, c)
 	}
 	C.pm_delete_cols(pm.matrix, C.int(nc), (*C.int)(cs))
+}
+
+// DeleteRows removes a list of rows from a packed matrix.
+func (pm *PackedMatrix) DeleteRows(rows []int) {
+	nr := len(rows)
+	rs := cMalloc(nr, C.int(0))
+	for i, r := range rows {
+		cSetArrayInt(rs, i, r)
+	}
+	C.pm_delete_rows(pm.matrix, C.int(nr), (*C.int)(rs))
 }
 
 // Dims returns a packed matrix's dimensions (rows and columns).
